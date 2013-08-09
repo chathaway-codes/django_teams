@@ -6,4 +6,4 @@ eclipse/
 *.bak
 *.pyc
 *.sqlite3
-src/python/
+python/
