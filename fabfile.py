@@ -4,6 +4,9 @@ from fabric.colors import green
 from fabric.contrib.console import confirm
 from contextlib import contextmanager as _contextmanager
 
+django_template = "https://github.com/chuck211991/django_template/zipball/master"
+
+
 application_description = """
   This wizard will ask you a series of questions it will use to generate a
 standarized Django skeleton application. The Django application can be run 
@@ -19,6 +22,16 @@ fils in this directory:
     * README.md
 
 Let's get started!
+"""
+
+activate_base_script = """
+if [ ! -d "{env_name}/" ]; then
+        virtualenv {env_name}/
+        . ./{env_name}/bin/activate
+        pip install -r libraries.txt
+fi
+
+. ./{env_name}/bin/activate
 """
 
 setup_py_base = """
@@ -53,6 +66,19 @@ setup(
     install_requires = read_requirements('libraries.txt'),
     test_suite = "dummy",
 )
+"""
+
+django_manage_py = """
+#!/usr/bin/env python
+import os
+import sys
+
+if __name__ == "__main__":
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "{app_name}.settings")
+
+    from django.core.management import execute_from_command_line
+
+    execute_from_command_line(sys.argv)
 """
 
 @_contextmanager
@@ -90,7 +116,8 @@ def start():
     )
     print("done!")
     
-    setup_virtualenv()
+    env_name = setup_virtualenv()
+    setup_project(env_name, package_name)
 
 def setup_virtualenv():
     print("Time to create the Python virtual environment")
@@ -101,3 +128,21 @@ def setup_virtualenv():
     
     with virtualenv(env_name):
         local('pip install -r libraries.txt')
+    print("Creating *nix activation script...")
+    f = open('activate', 'w')
+    f.write(
+        activate_base_script.format(
+            env_name = env_name
+        )
+    )
+        
+    return env_name
+       
+def setup_project(env_name, app_name):
+    print("Creating project...")
+    
+    with virtualenv(env_name):
+        local('django-admin.py startproject --template=%s %s' % (django_template, app_name))
+        local('mv %s %s.temp' % (app_name, app_name))
+        local('mv %s.temp/* .' % app_name)
+        local('rm -R %s.temp' % app_name)
