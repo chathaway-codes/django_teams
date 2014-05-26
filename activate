@@ -1,8 +1,0 @@
-
-if [ ! -d "python/" ]; then
-        virtualenv python/
-        . ./python/bin/activate
-        pip install -r libraries.txt
-fi
-
-. ./python/bin/activate
