@@ -1,11 +1,13 @@
 # This is where the models go!
 import types
+import sys
 from django.db import models
 from django.db.models.query import QuerySet
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
+from django.core.exceptions import ObjectDoesNotExist
 
 # Using the user: user = models.ForeignKey(settings.AUTH_USER_MODEL)
 CurrentUser = None
@@ -43,19 +45,30 @@ class Ownership(models.Model):
 
     team = models.ForeignKey('django_teams.Team')
 
+    @staticmethod
+    def grant_ownership(team, item):
+        content_type = ContentType.objects.get_for_model(item)
+        
+        res = Ownership.objects.get_or_create(team=team, content_type=content_type, object_id=item.id)
+        if res[1]:
+            res[0].save()
+
 def override_manager(model):
     def f(self):
-      if CurrentUser == None:
+      import django_teams.models
+      if django_teams.models.CurrentUser == None:
           return QuerySet(model=self.model, using=self._db)
       else:
-          if CurrentTeam == None:
-              # Get the team; assume first team
-              CurrentTeam = CurrentUser.team_set[0]
-          # Verify that the user is on the team...
-          ts = TeamStatus.objects.get(user=CurrentUser, team=CurrentTeam)
           # Get a list of objects on this model that the user has access too
           content_type = ContentType.objects.get_for_model(self.model)
-          ownerships = Ownership.objects.filter(content_type=content_type, team__in=CurrentUser.team_set.all())
+          ownerships = None
+          if django_teams.models.CurrentTeam != None:
+              # If they are only invited to current team, raise an error
+              if TeamStatus.objects.get(team=django_teams.models.CurrentTeam, user=django_teams.models.CurrentUser).role < 10:
+                  raise ObjectDoesNotExist()
+              ownerships = Ownership.objects.filter(content_type=content_type, team=django_teams.models.CurrentTeam)
+          else:
+              ownerships = Ownership.objects.filter(content_type=content_type, team__in=django_teams.models.CurrentUser.team_set.filter(teamstatus__role__gte=10))
           pk_list = []
           for o in ownerships:
               pk_list += [o.id]
