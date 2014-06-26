@@ -71,7 +71,7 @@ def override_manager(model):
               ownerships = Ownership.objects.filter(content_type=content_type, team__in=django_teams.models.CurrentUser.team_set.filter(teamstatus__role__gte=10))
           pk_list = []
           for o in ownerships:
-              pk_list += [o.id]
+              pk_list += [o.content_object.id]
           return QuerySet(model=self.model, using=self._db).filter(id__in=pk_list)
     model.objects.get_queryset = types.MethodType(f, model.objects)
 
