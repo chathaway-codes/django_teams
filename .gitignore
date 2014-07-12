@@ -7,3 +7,4 @@ eclipse/
 *.pyc
 *.sqlite3
 python/
+django_teams.egg-info/

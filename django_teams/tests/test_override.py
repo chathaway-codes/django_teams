@@ -88,3 +88,22 @@ class OwnershipTests(TestCase):
 
         django_teams.models.CurrentUser = None
         django_teams.models.CurrentTeam = None
+
+    def test_removing_non_restricted_doesnt_crash_things(self):
+        revert_manager(Team)
+
+    def test_restricted_related_managers(self):
+        # If we override the user, we should have no access to any groups
+        import django_teams.models
+        django_teams.models.CurrentUser = User.objects.get(pk=1)
+
+        team1 = Team(name="Team Mtn Dew")
+        team1.save()
+        team1.add_user(django_teams.models.CurrentUser, team_role=20)
+
+        Ownership.grant_ownership(team1, django_teams.models.CurrentUser)
+
+        override_manager(User)
+
+        self.assertEqual(User.objects.all().count(), 1)
+        self.assertEqual(django_teams.models.CurrentUser.groups.all().count(), 0)
