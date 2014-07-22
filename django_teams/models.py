@@ -18,15 +18,52 @@ CurrentTeam = None
 class Team(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='django_teams.TeamStatus')
     name = models.CharField(max_length=255)
+    private = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return self.name
 
     def add_user(self, user, team_role=1):
         TeamStatus(user=user, team=self, role=team_role).save()
+
+    def owners(self):
+        return self.users.filter(teamstatus__role=20)
+
+    def members(self):
+        return self.users.filter(teamstatus__role=10)
+    
+    def owned_objects(self, model):
+        # Maybe not the best way
+        contenttype = ContentType.objects.get_for_model(model)
+        ret = []
+        for ownership in Ownership.objects.filter(team=self, content_type=contenttype):
+            ret += [ownership.content_object]
+        return ret
+
+    def owned_object_types(self):
+        ret = []
+        for ownership in Ownership.objects.filter(team=self):
+            ret += [ownership.content_type.model_class()]
+        return ret
+
+    def member_count(self):
+        return self.users.all().count()
+
+    def get_user_status(self, user):
+        return TeamStatus.objects.filter(user=user, team=self)
 
     def approve_user(self, user):
         ts = TeamStatus.objects.get(user=user, team=self)
         if ts.role == 1:
             ts.role = 10
             ts.save()
+
+    @staticmethod
+    def get_current_team():
+        if CurrentTeam != None:
+            return CurrentTeam
+        return None
+
 
 class TeamStatus(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
@@ -46,6 +83,13 @@ class Ownership(models.Model):
     content_object = generic.GenericForeignKey('content_type', 'object_id')
 
     team = models.ForeignKey('django_teams.Team')
+
+    @staticmethod
+    def check_permission(item):
+        content_type = ContentType.objects.get_for_model(item)
+        res = Ownership.objects.filter(team=Team.get_current_team(), content_type=content_type, object_id=item.id)
+
+        return len(res) > 0
 
     @staticmethod
     def grant_ownership(team, item):

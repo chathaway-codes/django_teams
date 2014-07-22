@@ -2,8 +2,9 @@ from time import sleep
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.contenttypes.models import ContentType
 
-from django_teams.models import Team, TeamStatus
+from django_teams.models import Team, TeamStatus, Ownership
 
 class TeamTests(TestCase):
     fixtures = ['test_data.json']
@@ -28,10 +29,16 @@ class TeamTests(TestCase):
         self.assertEqual(team.users.all().count(), original_count+1)
 
     def test_can_approve_user(self):
-        self.test_can_add_user_to_team()
+        team = Team(name="Team Awesome")
+        team.save()
 
         user = User.objects.get(pk=1)
-        team = Team.objects.filter(name="Team Awesome").reverse()[0] # Most recent team
+ 
+        original_count = team.users.all().count()
+        team.add_user(user)
+        sleep(1)
+
+        self.assertEqual(team.users.all().count(), original_count+1)
 
         ts = TeamStatus.objects.filter(user=user, team=team).reverse()[0]
 
@@ -62,3 +69,30 @@ class TeamTests(TestCase):
         ts_count = TeamStatus.objects.filter(user=user, team=team).count()
 
         self.assertEqual(ts_count, 0)
+
+    def test_can_get_team_owners(self):
+        team = Team(name="Team Awesome")
+        team.save()
+        user = User.objects.get(pk=1)
+
+        team.add_user(user, team_role=20)
+
+        self.assertIn(user, team.owners())
+
+    def test_can_get_owned_objects(self):
+        team = Team(name="Team Awesome")
+        team.save()
+        user = User.objects.get(pk=1)
+
+        Ownership.grant_ownership(team, user)
+
+        self.assertIn(user, team.owned_objects(User))
+
+    def test_can_get_list_of_object_types(self):
+        team = Team(name="Team Awesome")
+        team.save()
+        user = User.objects.get(pk=1)
+
+        Ownership.grant_ownership(team, user)
+
+        self.assertIn(User, team.owned_object_types())
