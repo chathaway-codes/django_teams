@@ -31,7 +31,10 @@ class Team(models.Model):
 
     def members(self):
         return self.users.filter(teamstatus__role=10)
-    
+
+    def requests(self):
+        return TeamStatus.objects.filter(team=self, role=1)
+
     def owned_objects(self, model):
         # Maybe not the best way
         contenttype = ContentType.objects.get_for_model(model)
@@ -68,6 +71,7 @@ class Team(models.Model):
 class TeamStatus(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     team = models.ForeignKey('django_teams.Team')
+    comment = models.CharField(max_length=255, default='')
 
     TEAM_ROLES = (
         (1, 'Requesting Access'),
@@ -94,7 +98,7 @@ class Ownership(models.Model):
     @staticmethod
     def grant_ownership(team, item):
         content_type = ContentType.objects.get_for_model(item)
-        
+
         res = Ownership.objects.get_or_create(team=team, content_type=content_type, object_id=item.id)
         if res[1]:
             res[0].save()

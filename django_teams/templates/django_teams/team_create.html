@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block page-header %}
+<h1>Create team</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="form-group">
+        <label for="name">Team Name</label>
+        <input type="text" class="form-control" id="name" placeholder="Team name...">
+    </div>
+    <div class="form-group">
+        <div class="col-sm-12">
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox"> Private?
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Team</button>
+
+{% endblock %}

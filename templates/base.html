@@ -25,17 +25,17 @@
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <li><a href="#">Teams</a></li>
-                        <li><a href="#">Create Team</a></li>
+                        <li><a href="{% url 'team-list' %}">Teams</a></li>
+                        <li><a href="{% url 'team-create' %}">Create Team</a></li>
                     </ul>
                 </div><!--/.nav-collapse -->
             </div><!--/.container-fluid -->
         </div>
-    
+
         <div class="page-header">
             {% block page-header %}{% endblock %}
         </div>
-    
+
         <div class="alerts">
             {% bootstrap_messages %}
         </div>
@@ -48,4 +48,3 @@
     {% bootstrap_javascript jquery=True %}
   </body>
 </html>
-

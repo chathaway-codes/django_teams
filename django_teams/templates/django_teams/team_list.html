@@ -23,7 +23,7 @@
                     {% if forloop.last %}
                         {{ owner }}
                     {% else %}
-                        {{ owner}}, 
+                        {{ owner}},
                     {% endif %}
                 {% endfor %}
             </td>
@@ -32,13 +32,13 @@
                 {% if user.is_authenticated %}
                     {% with ts=object|get_user_status:user %}
                         {% if ts == None %}
-                            -
+                            <a href="{% url 'teamstatus-create' team_pk=object.pk %}">Join</a>
                         {% elif ts.role == 1 %}
                             Pending approval
                         {% elif ts.role == 10 %}
                             Member
                         {% elif ts.role == 20 %}
-                            Team Leader
+                            Team Leader (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
                         {% endif %}
                     {% endwith %}
                 {% else %}

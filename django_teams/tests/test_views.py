@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
 from django.test.client import Client
- 
+
 from django_teams.models import Team, TeamStatus
 
 class ListTeamsTests(TestCase):
@@ -69,3 +69,48 @@ class DetailTeamsTests(TestCase):
         response = self.client.get(reverse('team-detail', kwargs={'pk':team.pk}))
 
         self.assertEqual(response.status_code, 403)
+
+class EditTeamsTests(TestCase):
+    fixtures = ['test_data.json']
+
+    def test_can_get_route(self):
+        self.assertTrue(reverse('team-edit', kwargs={'pk':1}) != None)
+
+    def test_can_tell_admin_page(self):
+        """Verify text asserting that this is the admin page
+        """
+        team = Team(name="Team Awesome")
+        team.save()
+
+        user = User.objects.get(pk=1)
+        team.add_user(user, team_role=20)
+
+        self.client.login(username='test', password='test')
+        response = self.client.get(reverse('team-edit', kwargs={'pk':team.pk}))
+        self.client.logout()
+
+        self.assertContains(response, team.__unicode__())
+        self.assertContains(response, "admin")
+
+    def test_non_leader_cant_access_page(self):
+        """Non-admin users should not be able to access this page at all
+        """
+        team = Team(name="Team Awesome")
+        team.save()
+
+        user = User.objects.get(pk=1)
+        team.add_user(user, team_role=10)
+
+        self.client.login(username='test', password='test')
+
+        response = self.client.get(reverse('team-edit', kwargs={'pk':team.pk}))
+
+        self.assertEqual(response.status_code, 403)
+
+        self.client.logout()
+
+    def test_can_post_page(self):
+        """Verify that we can post changes to an admin page;
+        for example, approve users
+        """
+        pass

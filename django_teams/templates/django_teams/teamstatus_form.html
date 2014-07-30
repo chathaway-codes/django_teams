@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block page-header %}
+<h1>Join Team <small>{{ team }}</small></h1>
+{% endblock %}
+
+{% block content %}
+    <div class="form-group">
+        <label for="comment">Comment</label>
+        <textarea name="comment" class="form-control" rows="3"></textarea>
+    </div>
+
+    <p>Your request will be reviewed by the team leaders; {% for owner in team.owners %}
+        {{ owner }}{% if not forloop.last %},{% endif %}{% endfor %}</p>
+
+    <button type="submit" class="btn btn-primary">Request access</button>
+
+{% endblock %}
