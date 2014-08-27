@@ -5,7 +5,51 @@
 {% endblock %}
 
 {% block content %}
-    <form class="form-horizontal" method="post" action="{{ action }}">
+
+{{ form }}
+    <form class="form-horizontal" method="post" action="{% url 'team-edit' pk=object.pk %}">
+
+    {% with owner_form as form[0] %}
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title">Team Leaders</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <label class="col-sm-1 control-label">Action</label>
+                <div class="col-sm-11">
+                     <select id="id_action" name="action">
+                        <option value="---">---</option>
+                        <option value="Demote">Demote</option>
+                        <option value="Remove">Remove</option>
+                    </select>
+                </div>
+            </div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <td></td>
+                        <td>Name</td>
+                    </tr>
+                </thead>
+            {% for leader in object.owners %}
+                <tr>
+                    <td><input type="checkbox" name="requests" value="{{ request.id }}"></input></td>
+                    <td>{{ leader }}</td>
+                </tr>
+            {% endfor %}
+            </table>
+            <button type="submit" class="btn btn-primary">Submit all changes</button>
+        </div>
+    </div>
+    {% endwith %}
+
+    {% for f in form %}
+        {{ f.as_p }}
+    {% endfor %}
+
+    {% csrf_token %}
+
         {% if object.requests|length > 0 %}
         <div class="panel panel-default">
             <div class="panel-heading">

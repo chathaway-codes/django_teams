@@ -16,9 +16,12 @@ CurrentUser = None
 CurrentTeam = None
 
 class Team(models.Model):
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, through='django_teams.TeamStatus')
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, null=True, blank=True, through='django_teams.TeamStatus')
     name = models.CharField(max_length=255)
     private = models.BooleanField(default=False)
+
+    def get_absolute_url(self):
+        return reverse('team-detail', kwargs={'pk':self.pk})
 
     def __unicode__(self):
         return self.name
