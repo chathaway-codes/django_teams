@@ -132,9 +132,20 @@ class TeamEditView(UpdateView):
 
 class TeamStatusCreateView(CreateView):
     model = TeamStatus
+    #fields = ['comment']
+
+    def get_success_url(self):
+        return reverse('team-list')
+
+    def get_form(self, form_class):
+        kwargs = self.get_form_kwargs()
+        if 'data' in kwargs:
+            return form_class({'team': self.team.pk, 'user': self.request.user.pk, 'comment': kwargs['data']['comment'], 'role': 1})
+        return form_class()
 
     def dispatch(self, request, *args, **kwargs):
         self.team = Team.objects.get(pk=kwargs['team_pk'])
+        self.request = request
         return super(TeamStatusCreateView, self).dispatch(request, *args, **kwargs)
 
     def render_to_response(self, context, **response_kwargs):

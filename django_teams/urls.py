@@ -15,7 +15,7 @@ urlpatterns = patterns('',
     # TemplateView + Login
     #url(r'^$', login_required(TemplateView.as_view(template_name="home.html")), {}, 'home'),
     url(r'^teams/$', TeamListView.as_view(), name='team-list'),
-    url(r'^teams/create$', TeamCreateView.as_view(), name='team-create'),
+    url(r'^teams/create$', login_required(TeamCreateView.as_view()), name='team-create'),
     url(r'^teams/(?P<team_pk>\d+)/invite$', login_required(TeamStatusCreateView.as_view()), name='teamstatus-create'),
     url(r'^teams/(?P<pk>\d+)/$', TeamDetailView.as_view(), name='team-detail'),
     url(r'^teams/(?P<pk>\d+)/edit$', TeamEditView.as_view(), name='team-edit'),

@@ -2,15 +2,15 @@
 {% load teams %}
 
 {% block page-header %}
-    <h1>Teams <small>all created teams</small></h1>
+    <h1>Classrooms <small>all created teams</small></h1>
 {% endblock %}
 
 {% block content %}
     <table class="table table-striped">
         <thead>
             <tr>
-                <th>Team Name</th>
-                <th>Team Owners</th>
+                <th>Classroom Name</th>
+                <th>Classroom Owners</th>
                 <th># of members</th>
                 <th>Your status</th>
             </tr>
@@ -38,7 +38,7 @@
                         {% elif ts.role == 10 %}
                             Member
                         {% elif ts.role == 20 %}
-                            Team Leader (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
+                            Teacher (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
                         {% endif %}
                     {% endwith %}
                 {% else %}
