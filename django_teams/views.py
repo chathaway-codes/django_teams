@@ -1,8 +1,10 @@
 from django.core.exceptions import PermissionDenied
 # This is where your views go :)
+from django.http import HttpResponseRedirect
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
+from django.core.urlresolvers import reverse
 #from django.contrib import messages
 from django.shortcuts import get_object_or_404
 
@@ -66,20 +68,10 @@ class TeamEditView(UpdateView):
 
     def get_form(self, form_class):
         kwargs = self.get_form_kwargs()
-        print "kwargs: %s" % repr(kwargs)
-        owner_objects = {'prefix': 'owners'}
-        member_objects = {'prefix': 'members'}
-        requests_objects = {'prefix': 'requests'}
         if 'data' in kwargs:
-            for key, value in kwargs['data'].iteritems():
-                if key.split('-')[0] == 'owners':
-                    owner_objects[key.split('-')] = value
-                if key.split('-')[0] == 'members':
-                    member_objects[key.split('-')] = value
-                if key.split('-')[0] == 'requests':
-                    requests_objects[key.split('-')] = value
-        print "owner_objects: %s" % repr(owner_objects)
-        ret = [form_class[0](**owner_objects), form_class[1](**member_objects), form_class[2](**requests_objects)]
+            ret = [form_class[0](kwargs['data'], prefix='owners'), form_class[1](kwargs['data'], prefix='members'), form_class[2](kwargs['data'], prefix='requests')]
+        else:
+            ret = [form_class[0](prefix='owners'), form_class[1](prefix='members'), form_class[2](prefix='requests')]
 
         return ret
 
@@ -92,22 +84,20 @@ class TeamEditView(UpdateView):
         form_class = self.get_form_class()
         form = self.get_form(form_class)
 
-        print "Here1"
-
         for f in form:
-            print "in form %s" % repr(f)
             if not f.is_valid():
-                print "form not valid %s" % repr (f)
-                print vars(f)
                 return self.form_invalid(form)
         # Go through each form and perform the action
         # Owners
-        print "Here2"
         owner_action = form[0].cleaned_data['action']
         owner_items = form[0].cleaned_data['items']
+        print "owner_action: %s" % repr(owner_action)
+        print "owner_items: %s" % repr(owner_items)
         if owner_action == 'Demote':
             for i in owner_items:
-                self.oject.get_user_status(i).role = 10
+                o = self.object.get_user_status(i)
+                o.role = 10
+                o.save()
         if owner_action == 'Remove':
             for i in owner_items:
                 self.object.get_user_status(i).delete()
@@ -117,7 +107,9 @@ class TeamEditView(UpdateView):
         member_items = form[1].cleaned_data['items']
         if member_action == 'Promote':
             for i in member_items:
-                self.oject.get_user_status(i).role = 20
+                o = self.object.get_user_status(i)
+                o.role = 20
+                o.save()
         if member_action == 'Remove':
             for i in member_items:
                 self.object.get_user_status(i).delete()
@@ -126,14 +118,16 @@ class TeamEditView(UpdateView):
         request_action = form[0].cleaned_data['action']
         request_items = form[0].cleaned_data['items']
         if request_action == 'Approve':
-            print "Here"
             for i in request_items:
-                self.oject.add_user(i)
+                self.object.add_user(i)
         if request_action == 'Revoke':
             for i in request_items:
                 i.delete()
 
-        return self.form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+      return reverse('team-edit', kwargs={'pk':self.object.pk})
 
 class TeamStatusCreateView(CreateView):
     model = TeamStatus

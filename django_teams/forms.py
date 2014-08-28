@@ -1,4 +1,4 @@
-from django.forms import ModelForm
+from django.forms import ModelForm, widgets
 from django import forms
 
 from django_teams.models import Team
@@ -34,7 +34,7 @@ def action_formset(qset, actions):
     perform on a chosen subset of items from a queryset.
     """
     class _ActionForm(forms.Form):
-        items = forms.ModelMultipleChoiceField(queryset = qset)
-        action = forms.ChoiceField(choices = zip(actions, actions))
+        items = forms.ModelMultipleChoiceField(queryset = qset, required=False, widget=widgets.CheckboxSelectMultiple)
+        action = forms.ChoiceField(choices = zip(actions, actions), required=False)
 
     return _ActionForm

@@ -24,8 +24,12 @@ def load_fragment_template(object):
     except template.TemplateDoesNotExist:
         return "django_teams/fragments/default.html"
 
+def get(object, name):
+  return getattr(object, name)
+
 register = template.Library()
 register.filter(get_user_status)
 register.filter(get_owned_objects)
 register.filter(verbose_name)
 register.filter(load_fragment_template)
+register.filter(get)

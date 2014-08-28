@@ -56,7 +56,7 @@ class Team(models.Model):
         return self.users.all().count()
 
     def get_user_status(self, user):
-        return TeamStatus.objects.filter(user=user, team=self)
+        return TeamStatus.objects.filter(user=user, team=self)[0]
 
     def approve_user(self, user):
         ts = TeamStatus.objects.get(user=user, team=self)
