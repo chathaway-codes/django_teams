@@ -115,11 +115,12 @@ class TeamEditView(UpdateView):
                 self.object.get_user_status(i).delete()
 
         # Requests
-        request_action = form[0].cleaned_data['action']
-        request_items = form[0].cleaned_data['items']
+        request_action = form[2].cleaned_data['action']
+        request_items = form[2].cleaned_data['items']
         if request_action == 'Approve':
             for i in request_items:
-                self.object.add_user(i)
+                i.role = 10
+                i.save()
         if request_action == 'Revoke':
             for i in request_items:
                 i.delete()

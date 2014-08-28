@@ -5,9 +5,7 @@ from django_teams.models import Team, TeamStatus
 
 def get_user_status(team, user):
     ts = team.get_user_status(user)
-    if len(ts) >= 1:
-        return ts[0]
-    return None
+    return ts
 
 def get_owned_objects(team, model):
     return team.owned_objects(model)

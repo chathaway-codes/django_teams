@@ -56,7 +56,10 @@ class Team(models.Model):
         return self.users.all().count()
 
     def get_user_status(self, user):
-        return TeamStatus.objects.filter(user=user, team=self)[0]
+        s = TeamStatus.objects.filter(user=user, team=self)
+        if len(s) >= 1:
+            return s[0]
+        return None
 
     def approve_user(self, user):
         ts = TeamStatus.objects.get(user=user, team=self)
@@ -83,6 +86,9 @@ class TeamStatus(models.Model):
     )
 
     role = models.IntegerField(choices=TEAM_ROLES)
+
+    def __unicode__(self):
+        return "%s requesting to join %s" % (self.user.__unicode__(), self.team.__unicode__())
 
 class Ownership(models.Model):
     content_type = models.ForeignKey(ContentType)
