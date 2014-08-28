@@ -3,6 +3,7 @@ import os, sys
 
 try:
     from setuptools import setup
+    from setuptools import find_packages
 except:
     from distutils.core import setup
 
@@ -25,8 +26,9 @@ setup(
     author_email = "chathaway@logrit.com",
     description = "This package provides a framework for organizing groups of users and restricting access in other views and models",
     keywords = "",
-    packages=['django_teams'],
+    packages=find_packages(),
     long_description=read('README.md'),
     install_requires = read_requirements('libraries.txt'),
     test_suite = "dummy",
+    include_package_data=True,
 )
