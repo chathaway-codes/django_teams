@@ -42,14 +42,37 @@ class Team(models.Model):
         # Maybe not the best way
         contenttype = ContentType.objects.get_for_model(model)
         ret = []
+        
+        # I'm pretty sure there's a django one liner for this but I don't feel like looking right now
+        # Someone might want to do that in the future
         for ownership in Ownership.objects.filter(team=self, content_type=contenttype):
             ret += [ownership.content_object]
+            
         return ret
+
+    def unapproved_objects(self):
+        return Ownership.objects.filter(team=self, approved=False)
+      
+    def approved_objects(self):
+        return Ownership.objects.filter(team=self, approved=True)
+      
+    def approved_objects_of_model(self, model):
+        # Maybe not the best way
+        contenttype = ContentType.objects.get_for_model(model)
+        ret = []
+        
+        # I'm pretty sure there's a django one liner for this but I don't feel like looking right now
+        # Someone might want to do that in the future
+        for ownership in Ownership.objects.filter(team=self, content_type=contenttype, approved=True):
+            ret += [ownership.content_object]
+            
+        return ret          
 
     def owned_object_types(self):
         ret = []
         for ownership in Ownership.objects.filter(team=self):
-            ret += [ownership.content_type.model_class()]
+            if ownership.content_type.model_class() not in ret:
+                ret += [ownership.content_type.model_class()]
         return ret
 
     def member_count(self):
@@ -87,6 +110,12 @@ class TeamStatus(models.Model):
 
     role = models.IntegerField(choices=TEAM_ROLES)
 
+    def approve(self):
+      print `self.role` + "\n"
+      self.role = 10
+      print `self.role`
+      self.save()
+    
     def __unicode__(self):
         return "%s requesting to join %s" % (self.user.__unicode__(), self.team.__unicode__())
 
@@ -94,8 +123,27 @@ class Ownership(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
+    
+    approved = models.BooleanField(default=False)
+
 
     team = models.ForeignKey('django_teams.Team')
+    
+    def __unicode__(self):
+      # Returns type/id/owner/name
+      # Owner and name are optional
+      # / is used as delimiter because it's forbidden in user and model names
+      # and we don't care if it shows up in the last field
+      name = self.content_type.model + "/" + `self.object_id` + "/"
+      if self.content_object.owner:
+        name += self.content_object.owner.__unicode__()
+      name += "/"
+      if self.content_object.name:
+        name += self.content_object.name
+      return name
+    
+def label_from_instance(self, obj):
+    return "bloop bloop"  
 
     @staticmethod
     def check_permission(item):

@@ -63,15 +63,18 @@ class TeamEditView(UpdateView):
         ret = []
         ret += [action_formset(self.object.owners(), ('---', 'Demote', 'Remove'))]
         ret += [action_formset(self.object.members(), ('---', 'Promote', 'Remove'))]
-        ret += [action_formset(self.object.requests(), ('---', 'Approve', 'Revoke'))]
+        ret += [action_formset(self.object.requests(), ('---', 'Approve', 'Reject'))]
+        ret += [action_formset(self.object.approved_objects(), ('---', 'Remove'), link=True)]
+        ret += [action_formset(self.object.unapproved_objects(), ('---', 'Approve', 'Reject'), link=True)]
         return ret
 
     def get_form(self, form_class):
         kwargs = self.get_form_kwargs()
+
         if 'data' in kwargs:
-            ret = [form_class[0](kwargs['data'], prefix='owners'), form_class[1](kwargs['data'], prefix='members'), form_class[2](kwargs['data'], prefix='requests')]
+            ret = [form_class[0](kwargs['data'], prefix='teachers'), form_class[1](kwargs['data'], prefix='students'), form_class[2](kwargs['data'], prefix='member requests'), form_class[3](kwargs['data'], prefix='approved projects'), form_class[4](kwargs['data'], prefix='approval requests')]
         else:
-            ret = [form_class[0](prefix='owners'), form_class[1](prefix='members'), form_class[2](prefix='requests')]
+            ret = [form_class[0](prefix='teachers'), form_class[1](prefix='students'), form_class[2](prefix='member requests'), form_class[3](prefix='approved projects'), form_class[4](prefix='approval requests')]
 
         return ret
 
@@ -87,12 +90,11 @@ class TeamEditView(UpdateView):
         for f in form:
             if not f.is_valid():
                 return self.form_invalid(form)
+
         # Go through each form and perform the action
         # Owners
         owner_action = form[0].cleaned_data['action']
         owner_items = form[0].cleaned_data['items']
-        print "owner_action: %s" % repr(owner_action)
-        print "owner_items: %s" % repr(owner_items)
         if owner_action == 'Demote':
             for i in owner_items:
                 o = self.object.get_user_status(i)
@@ -124,6 +126,23 @@ class TeamEditView(UpdateView):
         if request_action == 'Revoke':
             for i in request_items:
                 i.delete()
+                
+        current_action = form[3].cleaned_data['action']
+        current_items = form[3].cleaned_data['items']
+        if current_action == 'Remove':
+            for i in current_items:
+                i.delete()
+                
+        project_action = form[4].cleaned_data['action']
+        project_items = form[4].cleaned_data['items']
+        if project_action == 'Approve':
+            for i in project_items:
+                i.approved = True
+                i.save()
+        if project_action == 'Reject':
+            for i in project_items:
+                i.delete()
+               
 
         return HttpResponseRedirect(self.get_success_url())
 

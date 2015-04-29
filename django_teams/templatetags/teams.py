@@ -9,6 +9,9 @@ def get_user_status(team, user):
 
 def get_owned_objects(team, model):
     return team.owned_objects(model)
+  
+def get_approved_objects(team, model):
+    return team.approved_objects_of_model(model)
 
 def verbose_name(object):
     return object._meta.verbose_name
@@ -28,6 +31,7 @@ def get(object, name):
 register = template.Library()
 register.filter(get_user_status)
 register.filter(get_owned_objects)
+register.filter(get_approved_objects)
 register.filter(verbose_name)
 register.filter(load_fragment_template)
 register.filter(get)
