@@ -142,9 +142,6 @@ class Ownership(models.Model):
         name += self.content_object.name
       return name
     
-def label_from_instance(self, obj):
-    return "bloop bloop"  
-
     @staticmethod
     def check_permission(item):
         content_type = ContentType.objects.get_for_model(item)

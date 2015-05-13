@@ -7,6 +7,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django_teams.models import override_manager, revert_manager, Team, TeamStatus, Ownership
 from django.contrib.sites.models import Site
 
+import unittest
+
+@unittest.skip("Feature defunct")
 class OwnershipTests(TestCase):
     fixtures = ['test_data.json']
 

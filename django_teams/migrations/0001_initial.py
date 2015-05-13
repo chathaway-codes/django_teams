@@ -18,7 +18,6 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('object_id', models.PositiveIntegerField()),
-                ('approved', models.BooleanField(default=False)),
                 ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
             ],
             options={
