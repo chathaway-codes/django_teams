@@ -37,7 +37,7 @@
                 <h3 class="panel-title">{{ model|verbose_name }}</h3>
             </div>
             <div class="panel-body row">
-                {% for object in team|get_owned_objects:model %}
+                {% for object in team|get_approved_objects:model %}
                     {% include object|load_fragment_template %}
                 {% endfor %}
             </div>
