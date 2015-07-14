@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse
 #from django.contrib import messages
 from django.shortcuts import get_object_or_404
 
+from project_share.models import Application, Project
 from django_teams.models import Team, Ownership, TeamStatus
 from django_teams.forms import *
 
@@ -139,10 +140,14 @@ class TeamEditView(UpdateView):
             for i in project_items:
                 i.approved = True
                 i.save()
+                p = Project.objects.get(pk=i.object_id)
+                updated_project = Project()
+                updated_project = p
+                updated_project.approved = True
+                updated_project.save() 
         if project_action == 'Reject':
             for i in project_items:
                 i.delete()
-               
 
         return HttpResponseRedirect(self.get_success_url())
 
