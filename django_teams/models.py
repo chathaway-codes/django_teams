@@ -7,7 +7,7 @@ from django.db.models.query import QuerySet
 from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.fields import GenericForeignKey
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.fields.related import SingleRelatedObjectDescriptor
 
@@ -122,25 +122,12 @@ class TeamStatus(models.Model):
 class Ownership(models.Model):
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey('content_type', 'object_id')
     
     approved = models.BooleanField(default=False)
 
 
     team = models.ForeignKey('django_teams.Team')
-    
-    def __unicode__(self):
-      # Returns type/id/owner/name
-      # Owner and name are optional
-      # / is used as delimiter because it's forbidden in user and model names
-      # and we don't care if it shows up in the last field
-      name = self.content_type.model + "/" + `self.object_id` + "/"
-      if self.content_object.owner:
-        name += self.content_object.owner.__unicode__()
-      name += "/"
-      if self.content_object.name:
-        name += self.content_object.name
-      return name
     
     @staticmethod
     def check_permission(item):

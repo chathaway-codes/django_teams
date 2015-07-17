@@ -5,6 +5,7 @@
   <head>
     <title>{% block title %}My Site{% endblock %}</title>
     {% bootstrap_css %}
+    {% block extra_head %}{% endblock %}
   </head>
 
   <body>
@@ -46,5 +47,8 @@
     </div>
 
     {% bootstrap_javascript jquery=True %}
+
+    {% block js %}
+    {% endblock %}
   </body>
 </html>

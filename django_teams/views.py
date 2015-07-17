@@ -72,9 +72,9 @@ class TeamEditView(UpdateView):
         kwargs = self.get_form_kwargs()
 
         if 'data' in kwargs:
-            ret = [form_class[0](kwargs['data'], prefix='teachers'), form_class[1](kwargs['data'], prefix='students'), form_class[2](kwargs['data'], prefix='member requests'), form_class[3](kwargs['data'], prefix='approved projects'), form_class[4](kwargs['data'], prefix='approval requests')]
+            ret = [form_class[0](kwargs['data'], prefix='teachers'), form_class[1](kwargs['data'], prefix='students'), form_class[2](kwargs['data'], prefix='member-requests'), form_class[3](kwargs['data'], prefix='approved-objects'), form_class[4](kwargs['data'], prefix='approval-requests')]
         else:
-            ret = [form_class[0](prefix='teachers'), form_class[1](prefix='students'), form_class[2](prefix='member requests'), form_class[3](prefix='approved projects'), form_class[4](prefix='approval requests')]
+            ret = [form_class[0](prefix='teachers'), form_class[1](prefix='students'), form_class[2](prefix='member-requests'), form_class[3](prefix='approved-objects'), form_class[4](prefix='approval-requests')]
 
         return ret
 
@@ -116,7 +116,7 @@ class TeamEditView(UpdateView):
             for i in member_items:
                 self.object.get_user_status(i).delete()
 
-        # Requests
+        # Member Requests
         request_action = form[2].cleaned_data['action']
         request_items = form[2].cleaned_data['items']
         if request_action == 'Approve':
@@ -133,14 +133,14 @@ class TeamEditView(UpdateView):
             for i in current_items:
                 i.delete()
                 
-        project_action = form[4].cleaned_data['action']
-        project_items = form[4].cleaned_data['items']
-        if project_action == 'Approve':
-            for i in project_items:
+        object_action = form[4].cleaned_data['action']
+        object_items = form[4].cleaned_data['items']
+        if object_action == 'Approve':
+            for i in object_items:
                 i.approved = True
                 i.save()
-        if project_action == 'Reject':
-            for i in project_items:
+        if object_action == 'Reject':
+            for i in object_items:
                 i.delete()
                
 
