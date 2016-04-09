@@ -68,7 +68,7 @@ class TeamEditView(UpdateView):
         ret += [action_formset(self.object.unapproved_objects(), ('---', 'Approve', 'Reject'), link=True)]
         return ret
 
-    def get_form(self, form_class=None):
+    def get_form(self, form_class=TeamEditForm):
         kwargs = self.get_form_kwargs()
 
         if 'data' in kwargs:
@@ -156,7 +156,7 @@ class TeamStatusCreateView(CreateView):
     def get_success_url(self):
         return reverse('team-list')
 
-    def get_form(self, form_class=None):
+    def get_form(self, form_class=TeamCreateForm):
         kwargs = self.get_form_kwargs()
         if 'data' in kwargs:
             return form_class({'team': self.team.pk, 'user': self.request.user.pk, 'comment': kwargs['data']['comment'], 'role': 1})
