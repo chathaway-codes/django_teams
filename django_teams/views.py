@@ -68,7 +68,7 @@ class TeamEditView(UpdateView):
         ret += [action_formset(self.object.unapproved_objects(), ('---', 'Approve', 'Reject'), link=True)]
         return ret
 
-    def get_form(self, form_class=TeamEditForm):
+    def get_form(self, form_class):
         kwargs = self.get_form_kwargs()
 
         if 'data' in kwargs:
