@@ -15,7 +15,7 @@ CurrentUser = None
 CurrentTeam = None
 
 class Team(models.Model):
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, null=True, blank=True, through='django_teams.TeamStatus')
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, null=True, blank=True, through='django_teams.TeamStatus', related_name='team_member')
     name = models.CharField(max_length=255)
     private = models.BooleanField(default=False)
 
