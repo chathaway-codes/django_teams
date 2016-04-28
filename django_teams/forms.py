@@ -2,7 +2,7 @@ from django.forms import ModelForm, widgets
 from django import forms
 from django.utils.html import format_html
 from itertools import chain
-from django_teams.models import Team
+from django_teams.models import Team, TeamStatus
 from django.utils.safestring import mark_safe
 from django.utils.encoding import force_text
 from django.template import Context, Template, loader as TemplateLoader
@@ -11,6 +11,11 @@ class TeamCreateForm(ModelForm):
     class Meta:
         model = Team
         fields = ['name', 'private']
+
+class TeamStatusCreateForm(ModelForm):
+    class Meta:
+        model = TeamStatus
+        fields = ['team','user','role','comment']
 
 class TeamEditForm(ModelForm):
     """This form is very complicated;

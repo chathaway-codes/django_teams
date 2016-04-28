@@ -8,7 +8,7 @@
     <form class="form-horizontal" method="post" action="{% url 'teamstatus-create' team_pk=team.pk %}">
         <tr><th><label for="id_comment">Comment:</label></th><td><input id="id_comment" maxlength="255" name="comment" type="text" /></td></tr>
 
-        <p>Your request will be reviewed by the teachers; {% for owner in team.owners %}
+        <p>Your request will be reviewed by the teachers: {% for owner in team.owners %}
             {{ owner }}{% if not forloop.last %},{% endif %}{% endfor %}</p>
 
         <button type="submit" class="btn btn-primary">Request access</button>
