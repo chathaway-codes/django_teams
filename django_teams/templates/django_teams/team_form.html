@@ -41,6 +41,7 @@
 
 {% block content %}
 
+	<h3 class="panel-title">Classroom# {{ object.pk }}</h3>
     <form class="form-horizontal" method="post" action="{% url 'team-edit' pk=object.pk %}">
 
     {% for f in form %}
