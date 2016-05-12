@@ -27,7 +27,7 @@ def load_fragment_template(object):
     except template.TemplateDoesNotExist:
         return "django_teams/fragments/default.html"
 		
-def item(object):
+def get_src(object):
     if isinstance(object, Ownership):
         ct = ContentType.objects.get_for_id(object.content_type_id)
         obj = ct.get_object_for_this_type(id=object.object_id)
@@ -39,10 +39,10 @@ def get(object, name):
   return getattr(object, name)
 
 register = template.Library()
-register.filter(get_user_status)
-register.filter(get_owned_objects)
-register.filter(get_approved_objects)
-register.filter(verbose_name)
-register.filter(load_fragment_template)
-register.filter('item',item)
-register.filter(get)
+register.filter('get_user_status',get_user_status)
+register.filter('get_owned_objects',get_owned_objects)
+register.filter('get_approved_objects',get_approved_objects)
+register.filter('verbose_name',verbose_name)
+register.filter('load_fragment_template',load_fragment_template)
+register.filter('get_src',get_src)
+register.filter('get',get)

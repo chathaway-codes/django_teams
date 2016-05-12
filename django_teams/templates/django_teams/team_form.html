@@ -58,7 +58,7 @@
             </div>
             <div class="user-list row">
                 {% for object in f.queryset %}
-				    {% with object|item as obj %}  
+				    {% with object|get_src as obj %}  
                     <div class="col-sm-4 col-md-3">
                     <input type="checkbox" class="thumbnail" onclick="toggleSelected('{{ f.items.id_for_label }}', '{{ object.id }}')" id="{{ f.items.id_for_label }}_{{ object.id }}">
 					{% include obj|load_fragment_template %}
