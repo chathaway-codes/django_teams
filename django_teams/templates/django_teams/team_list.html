@@ -17,7 +17,15 @@
         </thead>
         {% for object in object_list %}
         <tr>
-            <td><a href="{% url 'team-detail' pk=object.id %}">{{ object }}</a></td>
+            <td><a href="{% url 'team-detail' pk=object.id %}">{{ object }}</a>
+                {% if user.is_authenticated %}
+                    {% with ts=object|get_user_status:user %}
+                        {% if ts.role == 20 %}
+                            (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
+                        {% endif %}
+                    {% endwith %}
+                {% endif %}
+			</td>
             <td>
                 {% for owner in object.owners %}
                     {% if forloop.last %}
@@ -38,7 +46,7 @@
                         {% elif ts.role == 10 %}
                             Member
                         {% elif ts.role == 20 %}
-                            Teacher (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
+                            Teacher
                         {% endif %}
                     {% endwith %}
                 {% else %}

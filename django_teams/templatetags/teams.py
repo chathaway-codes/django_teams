@@ -28,11 +28,11 @@ def load_fragment_template(object):
         return "django_teams/fragments/default.html"
 		
 def get_src(object):
-    if isinstance(object, Ownership):
+    try:
         ct = ContentType.objects.get_for_id(object.content_type_id)
         obj = ct.get_object_for_this_type(id=object.object_id)
         return obj
-    else:
+    except:
         return object
 
 def get(object, name):
