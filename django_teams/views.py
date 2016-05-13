@@ -39,7 +39,7 @@ class TeamDetailView(DetailView):
         object = super(TeamDetailView, self).get_object(queryset)
 
         if object.private and self.request.user not in object.users.filter(teamstatus__role__gte=10):
-            raise PermissionDenied()
+            raise PermissionDenied("You are not a member of this private classroom.")
         return object
 
 class TeamEditView(UpdateView):
@@ -55,7 +55,7 @@ class TeamEditView(UpdateView):
 
         # User must be admin of the object to get into this view
         if self.request.user not in object.users.filter(teamstatus__role__gte=20):
-            raise PermissionDenied()
+            raise PermissionDenied("You are not an admin of this classroom")
         return object
 
     def get_form_class(self):
@@ -157,7 +157,7 @@ class TeamStatusCreateView(CreateView):
     def get_success_url(self):
         return reverse('team-list')
 
-    def get_form(self, form_class=TeamCreateForm):
+    def get_form(self, form_class=TeamStatusCreateForm):
         kwargs = self.get_form_kwargs()
         if 'data' in kwargs:
             return form_class({'team': self.team.pk, 'user': self.request.user.pk, 'comment': kwargs['data']['comment'], 'role': 1})

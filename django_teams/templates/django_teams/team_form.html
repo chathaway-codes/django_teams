@@ -41,6 +41,7 @@
 
 {% block content %}
 
+	<h3 class="panel-title">Classroom# {{ object.pk }}</h3>
     <form class="form-horizontal" method="post" action="{% url 'team-edit' pk=object.pk %}">
 
     {% for f in form %}
@@ -56,10 +57,14 @@
                 </div>
             </div>
             <div class="user-list row">
-                {% for object in f.queryset %}
-                    <div class="col-sm-6 col-md-2">
-                    <a class="thumbnail" onclick="toggleSelected('{{ f.items.id_for_label }}', '{{ object.id }}')" id="{{ f.items.id_for_label }}_{{ object.id }}">{% include object|load_fragment_template %}</a>
+                {% for item in f.queryset %}
+				    {% with item|get_src as object %}  
+                    <div class="col-sm-4 col-md-3">
+						<input type="checkbox" class="thumbnail" onclick="toggleSelected('{{ f.items.id_for_label }}', '{{ item.id }}')" id="{{ f.items.id_for_label }}_{{ item.id }}">
+							{% include object|load_fragment_template %}
+						</input>
                     </div>
+					{% endwith %}
                 {% endfor %}
                 {{ f.items }}
             </div>

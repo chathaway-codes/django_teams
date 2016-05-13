@@ -14,7 +14,7 @@
             {% for owner in object.owners %}
                 <div class="col-sm-6 col-md-2">
                     {% with object=owner %}
-                    <a class="thumbnail">{% include owner|load_fragment_template %}</a>
+                    {% include owner|load_fragment_template %}
                     {% endwith %}
                 </div>
             {% endfor %}
@@ -28,7 +28,7 @@
             {% for owner in object.members %}
                 <div class="col-sm-6 col-md-2">
                     {% with object=owner %}
-                    <a class="thumbnail">{% include owner|load_fragment_template %}</a>
+                    {% include owner|load_fragment_template %}
                     {% endwith %}
                 </div>
             {% endfor %}
@@ -43,7 +43,7 @@
             <div class="panel-body row">
                 {% for object in team|get_approved_objects:model %}
                     <div class="col-sm-6 col-md-2">
-                        <a class="thumbnail">{% include object|load_fragment_template %}</a>
+                        {% include object|load_fragment_template %}
                     </div>
                 {% endfor %}
             </div>
