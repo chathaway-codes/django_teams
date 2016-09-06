@@ -10,6 +10,7 @@
         <thead>
             <tr>
                 <th>Classroom Name</th>
+                <th>Classroom Description</th>
                 <th>Classroom Owners</th>
                 <th># of members</th>
                 <th>Your status</th>
@@ -18,6 +19,7 @@
         {% for object in object_list %}
         <tr>
             <td><a href="{% url 'team-detail' pk=object.id %}">{{ object }}</a></td>
+            <td>{% if object.description %}{{ object.description|truncatewords:15 }}{% endif %}</td>
             <td>
                 {% for owner in object.owners %}
                     {% if forloop.last %}

@@ -17,7 +17,7 @@ class TeamListView(ListView):
 class TeamCreateView(CreateView):
     model = Team
     template_name = 'django_teams/team_create.html'
-    fields = ['name', 'private']
+    fields = ['name', 'description', 'private']
 
     def dispatch(self, request, *args, **kwargs):
         self.request = request
@@ -39,6 +39,16 @@ class TeamDetailView(DetailView):
         object = super(TeamDetailView, self).get_object(queryset)
 
         if object.private and self.request.user not in object.users.filter(teamstatus__role__gte=10):
+            raise PermissionDenied()
+        return object
+
+class TeamInfoEditView(UpdateView):
+    model = Team
+    fields = ['name', 'description', 'private']
+    template_name = 'django_teams/teaminfo_form.html'
+    def get_object(self, queryset=None):
+        object = super(TeamInfoEditView, self).get_object(queryset)
+        if self.request.user not in object.users.filter(teamstatus__role__gte=20):
             raise PermissionDenied()
         return object
 

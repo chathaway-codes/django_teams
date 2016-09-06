@@ -2,7 +2,8 @@
 {% load teams %}
 
 {% block page-header %}
-<h1>{{ object }} <small>admin page</small></h1>
+<h1>{{ object }} <small>admin page, <a href="{% url 'team-info-edit' pk=object.pk %}">change name</a></small></h1>
+<p class="lead">{% if object.description %}{{ object.description }}{% endif %}</p>
 {% endblock %}
 
 {% block extra_head %}

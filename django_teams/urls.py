@@ -20,6 +20,7 @@ urlpatterns = [
     url(r'^teams/(?P<team_pk>\d+)/invite$', login_required(TeamStatusCreateView.as_view()), name='teamstatus-create'),
     url(r'^teams/(?P<pk>\d+)/$', TeamDetailView.as_view(), name='team-detail'),
     url(r'^teams/(?P<pk>\d+)/edit$', TeamEditView.as_view(), name='team-edit'),
+    url(r'^teams/(?P<pk>\d+)/info/edit$', TeamInfoEditView.as_view(), name='team-info-edit'),
 ]
 
 if settings.DEBUG:

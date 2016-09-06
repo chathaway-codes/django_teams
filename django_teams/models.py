@@ -18,6 +18,7 @@ class Team(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, null=True, blank=True, through='django_teams.TeamStatus', related_name='team_member')
     name = models.CharField(max_length=255)
     private = models.BooleanField(default=False)
+    description = models.TextField(null=True, blank=True)
 
     def get_absolute_url(self):
         return reverse('team-detail', kwargs={'pk':self.pk})

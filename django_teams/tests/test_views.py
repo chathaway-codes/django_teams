@@ -114,3 +114,33 @@ class EditTeamsTests(TestCase):
         for example, approve users
         """
         pass
+
+    def test_can_tell_admin_info_page(self):
+        """Verify that we can access the update info page
+        """
+        team = Team(name="Team Awesome")
+        team.save()
+
+        user = User.objects.get(pk=1)
+        team.add_user(user, team_role=20)
+
+        self.client.login(username='test', password='test')
+        response = self.client.get(reverse('team-info-edit', kwargs={'pk':team.pk}))
+        self.client.logout()
+
+    def test_non_leader_cant_access_info_page(self):
+        """Non-admin users should not be able to access this page at all
+        """
+        team = Team(name="Team Awesome")
+        team.save()
+
+        user = User.objects.get(pk=1)
+        team.add_user(user, team_role=10)
+
+        self.client.login(username='test', password='test')
+
+        response = self.client.get(reverse('team-info-edit', kwargs={'pk':team.pk}))
+
+        self.assertEqual(response.status_code, 403)
+
+        self.client.logout()

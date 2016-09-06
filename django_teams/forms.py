@@ -10,7 +10,7 @@ from django.template import Context, Template, loader as TemplateLoader
 class TeamCreateForm(ModelForm):
     class Meta:
         model = Team
-        fields = ['name', 'private']
+        fields = ['name', 'description', 'private']
 
 class TeamEditForm(ModelForm):
     """This form is very complicated;
@@ -33,7 +33,7 @@ class TeamEditForm(ModelForm):
 
     class Meta:
         model = Team
-        fields = ['users', 'name', 'private']
+        fields = ['users', 'name', 'description', 'private']
         
 def action_formset(qset, actions, link=False):
     """A form factory which returns a form which allows the user to pick a specific action to
