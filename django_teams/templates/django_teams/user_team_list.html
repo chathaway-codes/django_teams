@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load teams %}
+
+{% block page-header %}
+    <h1>Classrooms <small>in which you are the teacher</small></h1>
+{% endblock %}
+
+{% block content %}
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Classroom Name</th>
+                <th>Classroom Description</th>
+                <th>Classroom Owners</th>
+                <th># of members</th>
+                <th>Your status</th>
+            </tr>
+        </thead>
+        {% for object in object_list %}
+        <tr>
+            <td><a href="{% url 'team-detail' pk=object.id %}">{{ object }}</a></td>
+            <td>{% if object.description %}{{ object.description|truncatewords:15 }}{% endif %}</td>
+            <td>
+                {% for owner in object.owners %}
+                    {% if forloop.last %}
+                        {{ owner }}
+                    {% else %}
+                        {{ owner}},
+                    {% endif %}
+                {% endfor %}
+            </td>
+            <td>{{ object.member_count }}</td>
+            <td>
+                {% if user.is_authenticated %}
+                    {% with ts=object|get_user_status:user %}
+                        {% if ts == None %}
+                            <a href="{% url 'teamstatus-create' team_pk=object.pk %}">Join</a>
+                        {% elif ts.role == 1 %}
+                            Pending approval
+                        {% elif ts.role == 10 %}
+                            Member
+                        {% elif ts.role == 20 %}
+                            Teacher (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
+                        {% endif %}
+                    {% endwith %}
+                {% else %}
+                    You're not logged in!
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

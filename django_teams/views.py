@@ -14,6 +14,12 @@ from django_teams.forms import *
 class TeamListView(ListView):
     model = Team
 
+class UserTeamListView(ListView):
+    template_name = 'django_teams/user_team_list.html'
+    def get_queryset(self):
+        statuses = TeamStatus.objects.filter(user=self.request.user, role=20)
+        return [status.team for status in statuses]
+
 class TeamCreateView(CreateView):
     model = Team
     template_name = 'django_teams/team_create.html'
