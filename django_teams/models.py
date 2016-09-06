@@ -110,9 +110,7 @@ class TeamStatus(models.Model):
     role = models.IntegerField(choices=TEAM_ROLES)
 
     def approve(self):
-      print `self.role` + "\n"
       self.role = 10
-      print `self.role`
       self.save()
     
     def __unicode__(self):
