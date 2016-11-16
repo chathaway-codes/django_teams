@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+
     <form class="form-horizontal" method="post" action="{% url 'teamstatus-create' team_pk=team.pk %}">
         <tr><th><label for="id_comment">Comment:</label></th><td><input id="id_comment" maxlength="255" name="comment" type="text" /></td></tr>
 
