@@ -20,11 +20,13 @@
         <tr>
             <td>
               <a href="{% url 'team-detail' pk=object.id %}">{{ object }}</a>
-              {% with ts=object|get_user_status:user %}
-                {% if ts.role == 20 %}
-                    (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
-                {% endif %}
-              {% endwith %}
+              {% if user.is_authenticated %}
+                {% with ts=object|get_user_status:user %}
+                  {% if ts.role == 20 %}
+                      (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
+                  {% endif %}
+                {% endwith %}
+              {% endif %}
             </td>
             <td>{% if object.description %}{{ object.description|truncatewords:15 }}{% endif %}</td>
             <td>
