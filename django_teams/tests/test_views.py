@@ -2,8 +2,8 @@ import sys
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
 from django.test.client import Client
+from django.urls import reverse
 
 from django_teams.models import Team, TeamStatus
 
