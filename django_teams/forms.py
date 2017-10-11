@@ -36,6 +36,9 @@ class TeamEditForm(ModelForm):
         fields = ['users', 'name', 'description', 'private']
 
 class TeamStatusCreateForm(ModelForm):
+
+    comment = forms.CharField(required=False)
+
     class Meta:
         model = TeamStatus
         fields = ['comment']
