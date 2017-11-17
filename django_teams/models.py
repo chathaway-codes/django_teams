@@ -1,6 +1,6 @@
 # This is where the models go!
 from django.db import models
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
@@ -12,7 +12,6 @@ CurrentTeam = None
 
 class Team(models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL,
-                                   null=True,
                                    blank=True,
                                    through='django_teams.TeamStatus',
                                    related_name='team_member')
@@ -98,8 +97,8 @@ class Team(models.Model):
 
 
 class TeamStatus(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    team = models.ForeignKey('django_teams.Team')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    team = models.ForeignKey('django_teams.Team', on_delete=models.CASCADE)
     comment = models.CharField(max_length=255, default='', null=True, blank=True)
 
     TEAM_ROLES = (
@@ -119,11 +118,11 @@ class TeamStatus(models.Model):
 
 
 class Ownership(models.Model):
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     approved = models.BooleanField(default=False)
-    team = models.ForeignKey('django_teams.Team')
+    team = models.ForeignKey('django_teams.Team', on_delete=models.CASCADE)
 
     @staticmethod
     def check_permission(item):
