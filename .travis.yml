@@ -1,0 +1,43 @@
+language: python
+
+addons:
+  postgresql: 9.6
+  apt:
+    packages:
+    - postgresql-9.6-postgis-2.3
+
+node_js:
+  - "7"
+  - "node"
+
+python:
+  - 2.7
+
+services: postgresql
+
+env:
+  - DJANGO=1.9.5
+
+before_install:
+  - export DJANGO_SETTINGS_MODULE="django_teams.settings"
+  - export PYTHONPATH="/usr/local/lib/python2.7/dist-packages"
+  - export PIP_USE_MIRRORS=true
+
+install:
+  - pip install setuptools --upgrade
+  - pip install --upgrade -r requirements.txt
+  - pip install coveralls
+  - pip install flake8
+  - sudo service postgresql restart
+
+before_script:
+  - psql -c "CREATE DATABASE travisci;" -U postgres
+
+script:
+  - flake8 --ignore=E722 .
+  - python manage.py migrate
+  - coverage run --source=rpi_csdt_community manage.py test
+
+after_success:
+  - pip freeze
+  - echo Uploading code coverage data ...; coveralls
