@@ -100,7 +100,7 @@ class Team(models.Model):
 class TeamStatus(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
     team = models.ForeignKey('django_teams.Team')
-    comment = models.CharField(max_length=255, default='')
+    comment = models.CharField(max_length=255, default='', null=True, blank=True)
 
     TEAM_ROLES = (
         (1, 'Requesting Access'),
