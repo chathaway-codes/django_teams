@@ -1,16 +1,13 @@
-from django.forms import ModelForm, widgets
+from django.forms import ModelForm
 from django import forms
-from django.utils.html import format_html
-from itertools import chain
 from django_teams.models import Team, TeamStatus
-from django.utils.safestring import mark_safe
-from django.utils.encoding import force_text
-from django.template import Context, Template, loader as TemplateLoader
+
 
 class TeamCreateForm(ModelForm):
     class Meta:
         model = Team
         fields = ['name', 'description', 'private']
+
 
 class TeamEditForm(ModelForm):
     """This form is very complicated;
@@ -35,10 +32,12 @@ class TeamEditForm(ModelForm):
         model = Team
         fields = ['users', 'name', 'description', 'private']
 
+
 class TeamStatusCreateForm(ModelForm):
     class Meta:
         model = TeamStatus
         fields = ['comment']
+
 
 def action_formset(qset, actions, link=False):
     """A form factory which returns a form which allows the user to pick a specific action to
@@ -46,7 +45,7 @@ def action_formset(qset, actions, link=False):
     """
     class _ActionForm(forms.Form):
         queryset = qset
-        items = forms.ModelMultipleChoiceField(queryset = qset, required=False)
-        action = forms.ChoiceField(choices = zip(actions, actions), required=False)
+        items = forms.ModelMultipleChoiceField(queryset=qset, required=False)
+        action = forms.ChoiceField(choices=zip(actions, actions), required=False)
 
     return _ActionForm

@@ -1,17 +1,14 @@
-import sys
 from django.test import TestCase
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
-from django.test.client import Client
+from django_teams.models import Team
 
-from django_teams.models import Team, TeamStatus
 
 class ListTeamsTests(TestCase):
     fixtures = ['test_data.json']
 
     def test_can_get_route(self):
-        self.assertTrue(reverse('team-list') != None)
+        self.assertTrue(reverse('team-list') is not None)
 
     def test_can_load_page(self):
         response = self.client.get(reverse('team-list'))
@@ -36,28 +33,29 @@ class ListTeamsTests(TestCase):
         response = self.client.get(reverse('team-list'))
 
         for team in Team.objects.all():
-            self.assertContains(response, reverse('team-detail', kwargs={'pk':team.pk}))
+            self.assertContains(response, reverse('team-detail', kwargs={'pk': team.pk}))
+
 
 class DetailTeamsTests(TestCase):
     fixtures = ['test_data.json']
 
     def test_can_get_route(self):
-        self.assertTrue(reverse('team-detail', kwargs={'pk':1}) != None)
+        self.assertTrue(reverse('team-detail', kwargs={'pk': 1}) is not None)
 
     def test_can_load_page(self):
-        response = self.client.get(reverse('team-detail', kwargs={'pk':1}))
+        response = self.client.get(reverse('team-detail', kwargs={'pk': 1}))
 
         self.assertEqual(response.status_code, 200)
 
     def test_contains_team_name(self):
         team = Team.objects.get(pk=1)
-        response = self.client.get(reverse('team-detail', kwargs={'pk':team.pk}))
+        response = self.client.get(reverse('team-detail', kwargs={'pk': team.pk}))
 
         self.assertContains(response, str(team))
 
     def test_contains_list_of_owners(self):
         team = Team.objects.get(pk=1)
-        response = self.client.get(reverse('team-detail', kwargs={'pk':team.pk}))
+        response = self.client.get(reverse('team-detail', kwargs={'pk': team.pk}))
 
         for leader in team.owners():
             self.assertContains(response, str(leader))
@@ -66,15 +64,16 @@ class DetailTeamsTests(TestCase):
         team = Team(name="Team Awesome", private=True)
         team.save()
 
-        response = self.client.get(reverse('team-detail', kwargs={'pk':team.pk}))
+        response = self.client.get(reverse('team-detail', kwargs={'pk': team.pk}))
 
         self.assertEqual(response.status_code, 403)
+
 
 class EditTeamsTests(TestCase):
     fixtures = ['test_data.json']
 
     def test_can_get_route(self):
-        self.assertTrue(reverse('team-edit', kwargs={'pk':1}) != None)
+        self.assertTrue(reverse('team-edit', kwargs={'pk': 1}) is not None)
 
     def test_can_tell_admin_page(self):
         """Verify text asserting that this is the admin page
@@ -86,7 +85,7 @@ class EditTeamsTests(TestCase):
         team.add_user(user, team_role=20)
 
         self.client.login(username='test', password='test')
-        response = self.client.get(reverse('team-edit', kwargs={'pk':team.pk}))
+        response = self.client.get(reverse('team-edit', kwargs={'pk': team.pk}))
         self.client.logout()
 
         self.assertContains(response, str(team))
@@ -103,7 +102,7 @@ class EditTeamsTests(TestCase):
 
         self.client.login(username='test', password='test')
 
-        response = self.client.get(reverse('team-edit', kwargs={'pk':team.pk}))
+        response = self.client.get(reverse('team-edit', kwargs={'pk': team.pk}))
 
         self.assertEqual(response.status_code, 403)
 
@@ -125,7 +124,7 @@ class EditTeamsTests(TestCase):
         team.add_user(user, team_role=20)
 
         self.client.login(username='test', password='test')
-        response = self.client.get(reverse('team-info-edit', kwargs={'pk':team.pk}))
+        self.client.get(reverse('team-info-edit', kwargs={'pk': team.pk}))
         self.client.logout()
 
     def test_non_leader_cant_access_info_page(self):
@@ -139,7 +138,7 @@ class EditTeamsTests(TestCase):
 
         self.client.login(username='test', password='test')
 
-        response = self.client.get(reverse('team-info-edit', kwargs={'pk':team.pk}))
+        response = self.client.get(reverse('team-info-edit', kwargs={'pk': team.pk}))
 
         self.assertEqual(response.status_code, 403)
 

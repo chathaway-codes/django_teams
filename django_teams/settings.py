@@ -96,8 +96,8 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static/'),
 )
 
-TEMPLATES = [ 
-    {   
+TEMPLATES = [
+    {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
@@ -107,19 +107,19 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-            ],  
-        },  
-    },  
+            ],
+        },
+    },
 ]
 
 
 # Import local settings
 try:
-    from local_settings import *
+    from local_settings import *  # noqa: F401,F403
 except:
     pass
 
 if DEBUG and SECRET_KEY == '':
     SECRET_KEY = '452+twxj-9iy=mhnx%ch&)(*%_^3@x0v%_^bao$m_&=!4iv_#k'
-elif DEBUG == False:
+elif DEBUG is False and SECRET_KEY == '':
     raise "You need to define a secret key!"

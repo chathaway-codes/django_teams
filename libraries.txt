@@ -1,3 +1,0 @@
-Django>=1.5.1
-South>=1.0
-django-bootstrap3>=4.8.2
