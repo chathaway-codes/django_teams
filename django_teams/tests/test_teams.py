@@ -2,12 +2,13 @@ from time import sleep
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.contenttypes.models import ContentType
 
 from django_teams.models import Team, TeamStatus, Ownership
 
+
 class TeamTests(TestCase):
     fixtures = ['test_data.json']
+
     def test_can_create_new_team(self):
         original_count = Team.objects.all().count()
         team = Team(name="Team Awesome")
@@ -21,7 +22,7 @@ class TeamTests(TestCase):
         team.save()
 
         user = User.objects.get(pk=1)
-        
+
         original_count = team.users.all().count()
         team.add_user(user)
         sleep(1)
@@ -33,7 +34,7 @@ class TeamTests(TestCase):
         team.save()
 
         user = User.objects.get(pk=1)
- 
+
         original_count = team.users.all().count()
         team.add_user(user)
         sleep(1)
@@ -63,7 +64,7 @@ class TeamTests(TestCase):
         # Should throw error DNE
         try:
             team.approve_user(user)
-        except ObjectDoesNotExist as dne:
+        except ObjectDoesNotExist:
             pass
 
         ts_count = TeamStatus.objects.filter(user=user, team=team).count()

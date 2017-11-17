@@ -5,20 +5,25 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.core.urlresolvers import reverse
-#from django.contrib import messages
 from django.shortcuts import get_object_or_404
 
-from django_teams.models import Team, Ownership, TeamStatus
-from django_teams.forms import *
+from django_teams.models import Team, TeamStatus
+from django_teams.forms import (TeamEditForm,
+                                TeamStatusCreateForm,
+                                action_formset)
+
 
 class TeamListView(ListView):
     model = Team
 
+
 class UserTeamListView(ListView):
     template_name = 'django_teams/user_team_list.html'
+
     def get_queryset(self):
         statuses = TeamStatus.objects.filter(user=self.request.user, role=20)
         return [status.team for status in statuses]
+
 
 class TeamCreateView(CreateView):
     model = Team
@@ -34,6 +39,7 @@ class TeamCreateView(CreateView):
         self.object.add_user(self.request.user, team_role=20)
         return ret
 
+
 class TeamDetailView(DetailView):
     model = Team
 
@@ -48,15 +54,18 @@ class TeamDetailView(DetailView):
             raise PermissionDenied()
         return object
 
+
 class TeamInfoEditView(UpdateView):
     model = Team
     fields = ['name', 'description', 'private']
     template_name = 'django_teams/teaminfo_form.html'
+
     def get_object(self, queryset=None):
         object = super(TeamInfoEditView, self).get_object(queryset)
         if self.request.user not in object.users.filter(teamstatus__role__gte=20):
             raise PermissionDenied()
         return object
+
 
 class TeamEditView(UpdateView):
     model = Team
@@ -86,12 +95,20 @@ class TeamEditView(UpdateView):
 
     def get_form(self, form_class=TeamEditForm):
         kwargs = self.get_form_kwargs()
-        form_class = self.get_form_class();
+        form_class = self.get_form_class()
 
         if 'data' in kwargs:
-            ret = [form_class[0](kwargs['data'], prefix='teachers'), form_class[1](kwargs['data'], prefix='students'), form_class[2](kwargs['data'], prefix='member-requests'), form_class[3](kwargs['data'], prefix='approved-objects'), form_class[4](kwargs['data'], prefix='approval-requests')]
+            ret = [form_class[0](kwargs['data'], prefix='teachers'),
+                   form_class[1](kwargs['data'], prefix='students'),
+                   form_class[2](kwargs['data'], prefix='member-requests'),
+                   form_class[3](kwargs['data'], prefix='approved-objects'),
+                   form_class[4](kwargs['data'], prefix='approval-requests')]
         else:
-            ret = [form_class[0](prefix='teachers'), form_class[1](prefix='students'), form_class[2](prefix='member-requests'), form_class[3](prefix='approved-objects'), form_class[4](prefix='approval-requests')]
+            ret = [form_class[0](prefix='teachers'),
+                   form_class[1](prefix='students'),
+                   form_class[2](prefix='member-requests'),
+                   form_class[3](prefix='approved-objects'),
+                   form_class[4](prefix='approval-requests')]
 
         return ret
 
@@ -143,13 +160,13 @@ class TeamEditView(UpdateView):
         if request_action == 'Revoke':
             for i in request_items:
                 i.delete()
-                
+
         current_action = form[3].cleaned_data['action']
         current_items = form[3].cleaned_data['items']
         if current_action == 'Remove':
             for i in current_items:
                 i.delete()
-                
+
         object_action = form[4].cleaned_data['action']
         object_items = form[4].cleaned_data['items']
         if object_action == 'Approve':
@@ -159,16 +176,16 @@ class TeamEditView(UpdateView):
         if object_action == 'Reject':
             for i in object_items:
                 i.delete()
-               
 
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-      return reverse('team-edit', kwargs={'pk':self.object.pk})
+        return reverse('team-edit', kwargs={'pk': self.object.pk})
+
 
 class TeamStatusCreateView(CreateView):
     model = TeamStatus
-    form_class=TeamStatusCreateForm
+    form_class = TeamStatusCreateForm
 
     def get_success_url(self):
         return reverse('team-list')
@@ -177,7 +194,7 @@ class TeamStatusCreateView(CreateView):
         self.team = Team.objects.get(pk=kwargs['team_pk'])
         self.request = request
         return super(TeamStatusCreateView, self).dispatch(request, *args, **kwargs)
-    
+
     def form_valid(self, form):
         form.instance.team = self.team
         form.instance.user = self.request.user
