@@ -36,7 +36,7 @@ before_script:
 script:
   - flake8 --ignore=E722 .
   - python manage.py migrate
-  - coverage run --source=rpi_csdt_community manage.py test
+  - coverage run --source=django_teams manage.py test
 
 after_success:
   - pip freeze
