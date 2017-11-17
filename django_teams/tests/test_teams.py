@@ -15,7 +15,7 @@ class TeamTests(TestCase):
         team.save()
         sleep(1)
 
-        self.assertEqual(Team.objects.all().count(), original_count+1)
+        self.assertEqual(Team.objects.all().count(), original_count + 1)
 
     def test_can_add_user_to_team(self):
         team = Team(name="Team Awesome")
@@ -27,7 +27,7 @@ class TeamTests(TestCase):
         team.add_user(user)
         sleep(1)
 
-        self.assertEqual(team.users.all().count(), original_count+1)
+        self.assertEqual(team.users.all().count(), original_count + 1)
 
     def test_can_approve_user(self):
         team = Team(name="Team Awesome")
@@ -39,7 +39,7 @@ class TeamTests(TestCase):
         team.add_user(user)
         sleep(1)
 
-        self.assertEqual(team.users.all().count(), original_count+1)
+        self.assertEqual(team.users.all().count(), original_count + 1)
 
         ts = TeamStatus.objects.filter(user=user, team=team).reverse()[0]
 
