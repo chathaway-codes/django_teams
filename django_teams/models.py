@@ -127,9 +127,7 @@ class Ownership(models.Model):
     @staticmethod
     def check_permission(item):
         content_type = ContentType.objects.get_for_model(item)
-        res = Ownership.objects.filter(team=Team.get_current_team(), content_type=content_type, object_id=item.id)
-
-        return len(res) > 0
+        return Ownership.objects.filter(team=Team.get_current_team(), content_type=content_type, object_id=item.id).exists()
 
     @staticmethod
     def grant_ownership(team, item):

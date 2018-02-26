@@ -50,7 +50,7 @@ class TeamDetailView(DetailView):
     def get_object(self, queryset=None):
         object = super(TeamDetailView, self).get_object(queryset)
 
-        if object.private and self.request.user not in object.users.filter(teamstatus__role__gte=10):
+        if object.private and not object.users.filter(username=self.request.user, teamstatus__role__gte=10).exists():
             raise PermissionDenied()
         return object
 
@@ -62,7 +62,7 @@ class TeamInfoEditView(UpdateView):
 
     def get_object(self, queryset=None):
         object = super(TeamInfoEditView, self).get_object(queryset)
-        if self.request.user not in object.users.filter(teamstatus__role__gte=20):
+        if not object.users.filter(username=self.request.user, teamstatus__role__gte=20).exists():
             raise PermissionDenied()
         return object
 
@@ -79,7 +79,7 @@ class TeamEditView(UpdateView):
         object = super(TeamEditView, self).get_object(queryset)
 
         # User must be admin of the object to get into this view
-        if self.request.user not in object.users.filter(teamstatus__role__gte=20):
+        if not object.users.filter(username=self.request.user, teamstatus__role__gte=20).exists():
             raise PermissionDenied()
         return object
 
