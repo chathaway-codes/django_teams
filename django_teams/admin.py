@@ -11,10 +11,10 @@ class TeamAdmin(admin.ModelAdmin):
     search_fields = ['name', 'users__username']
 
     def owner(self, obj):
-        return "\n".join([a.username for a in obj.owners().all()])
+        return "\n".join([a for a in obj.owners().values_list('username', flat=True)])
 
     def member(self, obj):
-        return "\n".join([a.username for a in obj.members().all()])
+        return "\n".join([a for a in obj.members().values_list('username', flat=True)])
 
 
 class TeamStatusAdmin(admin.ModelAdmin):

@@ -44,9 +44,12 @@ class Team(models.Model):
 
         # I'm pretty sure there's a django one liner for this but I don't feel like looking right now
         # Someone might want to do that in the future
-        for ownership in Ownership.objects.filter(team=self, content_type=contenttype):
-            ret += [ownership.content_object]
-
+        # ownership_set = Ownership.objects.filter(team=self, content_type=contenttype).values_list('content_object', flat=True)
+        # Got an error: Cannot resolve keyword 'content_object' into fields
+        ownership_set = Ownership.objects.filter(team=self, content_type=contenttype)
+        if ownership_set.exists():
+            for ownership in ownership_set.iterator():
+                ret += [ownership.content_object]
         return ret
 
     def unapproved_objects(self):
@@ -62,16 +65,19 @@ class Team(models.Model):
 
         # I'm pretty sure there's a django one liner for this but I don't feel like looking right now
         # Someone might want to do that in the future
-        for ownership in Ownership.objects.filter(team=self, content_type=contenttype, approved=True):
-            ret += [ownership.content_object]
-
+        ownership_set = Ownership.objects.filter(team=self, content_type=contenttype, approved=True).only('content_object')
+        if ownership_set.exists():
+            for ownership in ownership_set.iterator():
+                ret += [ownership.content_object]
         return ret
 
     def owned_object_types(self):
         ret = []
-        for ownership in Ownership.objects.filter(team=self):
-            if ownership.content_type.model_class() not in ret:
-                ret += [ownership.content_type.model_class()]
+        ownership_set = Ownership.objects.filter(team=self).only('content_object')
+        if ownership_set.exists():
+            for ownership in ownership_set.iterator():
+                if ownership.content_type.model_class() not in ret:
+                    ret += [ownership.content_type.model_class()]
         return ret
 
     def member_count(self):
@@ -79,7 +85,7 @@ class Team(models.Model):
 
     def get_user_status(self, user):
         s = TeamStatus.objects.filter(user=user, team=self)
-        if len(s) >= 1:
+        if len(s) > 0:
             return s[0]
         return None
 
@@ -127,12 +133,12 @@ class Ownership(models.Model):
     @staticmethod
     def check_permission(item):
         content_type = ContentType.objects.get_for_model(item)
-        return Ownership.objects.filter(team=Team.get_current_team(), content_type=content_type, object_id=item.id).exists()
+        ownership_set = Ownership.objects.filter(team=Team.get_current_team(), content_type=content_type, object_id=item.id)
+        return ownership_set.exists()
 
     @staticmethod
     def grant_ownership(team, item):
         content_type = ContentType.objects.get_for_model(item)
-
         res = Ownership.objects.get_or_create(team=team, content_type=content_type, object_id=item.id)
         if res[1]:
             res[0].save()
