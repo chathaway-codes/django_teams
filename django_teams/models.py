@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.utils.functional import cached_property
 
 # Using the user: user = models.ForeignKey(settings.AUTH_USER_MODEL)
 CurrentUser = None
@@ -15,6 +16,7 @@ class Team(models.Model):
                                    blank=True,
                                    through='django_teams.TeamStatus',
                                    related_name='team_member')
+
     name = models.CharField(max_length=255)
     private = models.BooleanField(default=False)
     description = models.TextField(null=True, blank=True)
@@ -29,13 +31,13 @@ class Team(models.Model):
         TeamStatus(user=user, team=self, role=team_role).save()
 
     def owners(self):
-        return self.users.filter(teamstatus__role=20)
+        return self.users.filter(teamstatus__role=20).only('username')
 
     def members(self):
-        return self.users.filter(teamstatus__role=10)
+        return self.users.filter(teamstatus__role=10).only('username')
 
     def requests(self):
-        return TeamStatus.objects.filter(team=self, role=1)
+        return TeamStatus.objects.select_related().filter(team=self, role=1)
 
     def owned_objects(self, model):
         # Maybe not the best way
@@ -46,8 +48,9 @@ class Team(models.Model):
         # Someone might want to do that in the future
         # ownership_set = Ownership.objects.filter(team=self, content_type=contenttype).values_list('content_object', flat=True)
         # Got an error: Cannot resolve keyword 'content_object' into fields
-        ownership_set = Ownership.objects.filter(team=self, content_type=contenttype)
-        if ownership_set.exists():
+
+        ownership_set = Ownership.objects.select_related().filter(team=self, content_type=contenttype)
+        if ownership_set:
             for ownership in ownership_set.iterator():
                 ret += [ownership.content_object]
         return ret
@@ -65,32 +68,31 @@ class Team(models.Model):
 
         # I'm pretty sure there's a django one liner for this but I don't feel like looking right now
         # Someone might want to do that in the future
-        ownership_set = Ownership.objects.filter(team=self, content_type=contenttype, approved=True).only('content_object')
-        if ownership_set.exists():
+        ownership_set = Ownership.objects.select_related().filter(team=self, content_type=contenttype, approved=True)
+        if ownership_set:
             for ownership in ownership_set.iterator():
                 ret += [ownership.content_object]
         return ret
 
     def owned_object_types(self):
         ret = []
-        ownership_set = Ownership.objects.filter(team=self).only('content_object')
-        if ownership_set.exists():
+        ownership_set = Ownership.objects.select_related('team').filter(team=self)
+        if ownership_set:
             for ownership in ownership_set.iterator():
                 if ownership.content_type.model_class() not in ret:
                     ret += [ownership.content_type.model_class()]
         return ret
 
+    @cached_property
     def member_count(self):
         return self.users.all().count()
 
     def get_user_status(self, user):
-        s = TeamStatus.objects.filter(user=user, team=self)
-        if len(s) > 0:
-            return s[0]
-        return None
+        s = TeamStatus.objects.select_related().filter(user=user, team=self).first()
+        return s
 
     def approve_user(self, user):
-        ts = TeamStatus.objects.get(user=user, team=self)
+        ts = TeamStatus.objects.select_related().get(user=user, team=self).only('role')
         if ts.role == 1:
             ts.role = 10
             ts.save()
@@ -133,7 +135,7 @@ class Ownership(models.Model):
     @staticmethod
     def check_permission(item):
         content_type = ContentType.objects.get_for_model(item)
-        ownership_set = Ownership.objects.filter(team=Team.get_current_team(), content_type=content_type, object_id=item.id)
+        ownership_set = Ownership.objects.select_related().filter(team=Team.get_current_team(), content_type=content_type, object_id=item.id)
         return ownership_set.exists()
 
     @staticmethod

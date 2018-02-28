@@ -21,7 +21,7 @@ class UserTeamListView(ListView):
     template_name = 'django_teams/user_team_list.html'
 
     def get_queryset(self):
-        statuses = TeamStatus.objects.filter(user=self.request.user, role=20).values_list('team', flat=True)
+        statuses = TeamStatus.objects.select_related('user').filter(user=self.request.user, role=20).values_list('team', flat=True)
         return statuses
 
 
