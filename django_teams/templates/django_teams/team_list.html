@@ -2,10 +2,20 @@
 {% load teams %}
 
 {% block page-header %}
-    <h1>Classrooms <small>all created teams</small></h1>
 {% endblock %}
 
 {% block content %}
+<div class="row" align="right">
+    {% if user.is_authenticated %}
+        <h4><a href="{% url 'team-create' %}">Create your own</a></h4>
+    {% endif %}
+</div>
+
+
+
+<div class="row">
+    <h2>Classrooms: </h2>
+</div>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -17,46 +27,7 @@
             </tr>
         </thead>
         {% for object in object_list %}
-        <tr>
-            <td>
-              <a href="{% url 'team-detail' pk=object.id %}">{{ object }}</a>
-              {% if user.is_authenticated %}
-                {% with ts=object|get_user_status:user %}
-                  {% if ts.role == 20 %}
-                      (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
-                  {% endif %}
-                {% endwith %}
-              {% endif %}
-            </td>
-            <td>{% if object.description %}{{ object.description|truncatewords:15 }}{% endif %}</td>
-            <td>
-                {% for owner in object.owners %}
-                    {% if forloop.last %}
-                        {{ owner }}
-                    {% else %}
-                        {{ owner}},
-                    {% endif %}
-                {% endfor %}
-            </td>
-            <td>{{ object.member_count }}</td>
-            <td>
-                {% if user.is_authenticated %}
-                    {% with ts=object|get_user_status:user %}
-                        {% if ts == None %}
-                            <a href="{% url 'teamstatus-create' team_pk=object.pk %}">Join</a>
-                        {% elif ts.role == 1 %}
-                            Pending approval
-                        {% elif ts.role == 10 %}
-                            Member
-                        {% elif ts.role == 20 %}
-                            Teacher (<a href="{% url 'team-edit' pk=object.pk %}">Admin</a>)
-                        {% endif %}
-                    {% endwith %}
-                {% else %}
-                    You're not logged in!
-                {% endif %}
-            </td>
-        </tr>
+              {% include "django_teams/_table.html" %}
         {% endfor %}
     </table>
 {% endblock %}
