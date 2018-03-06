@@ -21,7 +21,7 @@ class TeamAdmin(admin.ModelAdmin):
 
 @admin.register(Ownership)
 class OwnershipAdmin(admin.ModelAdmin):
-	
+
 	show_full_result_count = False
 
 
@@ -32,4 +32,4 @@ class TeamStatusAdmin(admin.ModelAdmin):
 
 	def get_queryset(self, request):
 		qs = super(TeamStatusAdmin, self).get_queryset(request)
-		return qs.filter(user=request.user)
+		return qs.select_related('user', 'team').filter(user=request.user)
