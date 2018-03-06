@@ -56,8 +56,8 @@ class DetailTeamsTests(TestCase):
     def test_contains_list_of_owners(self):
         team = Team.objects.get(pk=1)
         response = self.client.get(reverse('team-detail', kwargs={'pk': team.pk}))
-
-        for leader in team.owners():
+        owners = team.users.filter(teamstatus__role=20)
+        for leader in owners:
             self.assertContains(response, str(leader))
 
     def test_private_team_is_not_open_to_public(self):
