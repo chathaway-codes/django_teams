@@ -89,7 +89,8 @@ class TeamTests(TestCase):
 
         contenttype = ContentType.objects.get_for_model(User)
         owned_objects = []
-        ownership_set = Ownership.objects.select_related('team', 'content_type').filter(team=team, content_type=contenttype)        
+        ownership_set = Ownership.objects.select_related('team',
+                                                         'content_type').filter(team=team, content_type=contenttype)
         for ownership in ownership_set.iterator():
             owned_objects += [ownership.content_object]
 
@@ -107,6 +108,5 @@ class TeamTests(TestCase):
         for ownership in ownership_set.iterator():
             if ownership.content_type.model_class() not in owned_object_types:
                 owned_object_types += [ownership.content_type.model_class()]
-
 
         self.assertIn(User, owned_object_types)
