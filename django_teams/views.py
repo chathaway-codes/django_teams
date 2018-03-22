@@ -6,7 +6,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
-from django.db.models import Count
+from django.db.models import Count, F, Subquery, Sum, Q
 from django_teams.models import Team, TeamStatus, Ownership
 from django_teams.forms import (TeamEditForm,
                                 TeamStatusCreateForm,
@@ -34,13 +34,18 @@ class TeamListView(ListView):
 
     def get_queryset(self):
         queryset = Team.objects.all().annotate(member_count=Count('users'))
-        queryset = queryset.annotate(owner=Case(When(teamstatus__role=20, then='users__username'), default=None))
+        queryset = queryset.annotate(owner=Case(When(teamstatus__role=20, then=F('users__username')), default=None))
         if not self.request.user.is_anonymous():
-            queryset = queryset.annotate(role=Case(When(teamstatus__user=self.request.user, then='teamstatus__role'),
+            queryset = queryset.annotate(role=Case(When(teamstatus__user=self.request.user, then=F('teamstatus__role')),
                                          default=0, outputfield=models.IntegerField()))
             queryset = queryset.order_by('-role')
         else:
             queryset = queryset.order_by('-id')
+
+        for q in queryset:
+            q.member_count = queryset.filter(name=q.name).aggregate(Sum('member_count'))['member_count__sum']
+            if q.owner is None and queryset.filter(Q(name=q.name) & ~Q(owner=None)).exists():
+                q.owner = queryset.filter(Q(name=q.name) & ~Q(owner=None))[0].owner
         return queryset
 
 
@@ -83,15 +88,17 @@ class TeamDetailView(DetailView):
 
     def render_to_response(self, context, **response_kwargs):
         team = self.object
+        # context['owner'] = team.users.filter(teamstatus__role=20)
+        # context['members'] = team.users.filter(teamstatus__role=10)
         context['owners'] = []
         context['members'] = []
-        statuses = TeamStatus.objects.select_related('user').filter(team=team)
+        statuses = TeamStatus.objects.select_related('user', 'team').filter(team=team)
         for s in statuses:
             if s.role == 10:
                 context['members'].append(s.user)
             elif s.role == 20:
                 context['owners'].append(s.user)
-        owned = Ownership.objects.select_related('team').filter(team=team, approved=True)
+        owned = Ownership.objects.filter(team=team, approved=True)
         context['approved_objects_types'] = loadGenericKeyRelations(owned)
         return super(TeamDetailView, self).render_to_response(context, **response_kwargs)
 
