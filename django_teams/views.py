@@ -44,8 +44,9 @@ class TeamListView(ListView):
 
         for q in queryset:
             q.member_count = queryset.filter(name=q.name).aggregate(Sum('member_count'))['member_count__sum']
+        for q in queryset:
             if q.owner is None and queryset.filter(Q(name=q.name) & ~Q(owner=None)).exists():
-                q.owner = queryset.filter(Q(name=q.name) & ~Q(owner=None))[0].owner
+                queryset = queryset.exclude(name=q.name,owner=q.owner)
         return queryset
 
 
