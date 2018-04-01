@@ -1,6 +1,7 @@
 from django.core.exceptions import PermissionDenied
 # This is where your views go :)
 from django.http import HttpResponseRedirect
+from django.template.response import TemplateResponse
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
@@ -13,6 +14,7 @@ from django_teams.forms import (TeamEditForm,
                                 action_formset)
 from django.db.models import Case, When
 from django.db import models
+import json
 
 
 def loadGenericKeyRelations(queryset):
@@ -32,7 +34,7 @@ def loadGenericKeyRelations(queryset):
 class TeamListView(ListView):
     model = Team
 
-    def get_queryset(self):
+    def render_to_response(self, context, **response_kwargs):
         queryset = Team.objects.all().annotate(member_count=Count('users'))
         queryset = queryset.annotate(owner=Case(When(teamstatus__role=20, then=F('users__username')), default=None))
         if not self.request.user.is_anonymous():
@@ -42,12 +44,19 @@ class TeamListView(ListView):
         else:
             queryset = queryset.order_by('-id')
 
+        teams = {}
         for q in queryset:
-            q.member_count = queryset.filter(name=q.name).aggregate(Sum('member_count'))['member_count__sum']
-        for q in queryset:
-            if q.owner is None and queryset.filter(Q(name=q.name) & ~Q(owner=None)).exists():
-                queryset = queryset.exclude(name=q.name,owner=q.owner)
-        return queryset
+            if q.name not in teams:
+                try:
+                    teams[q.name] = [q.id, q.pk, q.description, q.member_count, q.owner, q.role]
+                except:
+                    teams[q.name] = [q.id, q.pk, q.description, q.member_count, q.owner, None]
+            else:
+                teams[q.name][3] += q.member_count
+                if q.owner is not None:
+                    teams[q.name][4] = q.owner
+        return super(TeamListView, self).render_to_response({'teams': teams}, **response_kwargs)
+
 
 
 class UserTeamListView(ListView):

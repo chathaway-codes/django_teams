@@ -26,8 +26,9 @@
                 <th>Your status</th>
             </tr>
         </thead>
-        {% for object in object_list %}
+        {% for key,value in teams.items %}
               {% include "django_teams/_table.html" %}
+            
         {% endfor %}
     </table>
 {% endblock %}
