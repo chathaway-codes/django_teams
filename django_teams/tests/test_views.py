@@ -16,15 +16,16 @@ class ListTeamsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_page_contains_all_teams(self):
-        Team(name="Team Awesome").save()
-        Team(name="Team Silly").save()
-        Team(name="Hamburger").save()
+        # Team(name="Team Awesome").save()
+        # Team(name="Team Silly").save()
+        # Team(name="Hamburger").save()
 
         self.assertTrue(Team.objects.all().count() > 0)
 
         response = self.client.get(reverse('team-list'))
 
         for team in Team.objects.all():
+            print team.name, team.pk
             self.assertContains(response, str(team))
 
     def test_page_contains_links_to_teams(self):
