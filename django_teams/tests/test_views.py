@@ -25,7 +25,6 @@ class ListTeamsTests(TestCase):
         response = self.client.get(reverse('team-list'))
 
         for team in Team.objects.all():
-            print team.name, team.pk
             self.assertContains(response, str(team))
 
     def test_page_contains_links_to_teams(self):

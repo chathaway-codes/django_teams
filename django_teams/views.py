@@ -1,20 +1,18 @@
 from django.core.exceptions import PermissionDenied
 # This is where your views go :)
 from django.http import HttpResponseRedirect
-from django.template.response import TemplateResponse
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
-from django.db.models import Count, F, Subquery, Sum, Q
+from django.db.models import Count, F
 from django_teams.models import Team, TeamStatus, Ownership
 from django_teams.forms import (TeamEditForm,
                                 TeamStatusCreateForm,
                                 action_formset)
 from django.db.models import Case, When
 from django.db import models
-import json
 
 
 def loadGenericKeyRelations(queryset):
@@ -38,7 +36,8 @@ class TeamListView(ListView):
         queryset = Team.objects.all().annotate(member_count=Count('users'))
         queryset = queryset.annotate(owner=Case(When(teamstatus__role=20, then=F('users__username')), default=None))
         if not self.request.user.is_anonymous():
-            queryset = queryset.annotate(role=Case(When(teamstatus__user=self.request.user, then=F('teamstatus__role')),
+            queryset = queryset.annotate(role=Case(When(teamstatus__user=self.request.user,
+                                         then=F('teamstatus__role')),
                                          default=0, outputfield=models.IntegerField()))
             queryset = queryset.order_by('-role')
         else:
@@ -56,7 +55,6 @@ class TeamListView(ListView):
                 if q.owner is not None:
                     teams[q.name][4] = q.owner
         return super(TeamListView, self).render_to_response({'teams': teams}, **response_kwargs)
-
 
 
 class UserTeamListView(ListView):
