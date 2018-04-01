@@ -48,7 +48,7 @@ class TeamListView(ListView):
             if q.name not in teams:
                 try:
                     teams[q.name] = [q.id, q.pk, q.description, q.member_count, q.owner, q.role]
-                except:
+                except Exception:
                     teams[q.name] = [q.id, q.pk, q.description, q.member_count, q.owner, None]
             else:
                 teams[q.name][3] += q.member_count
