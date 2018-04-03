@@ -20,6 +20,9 @@ class ListTeamsTests(TestCase):
         # Team(name="Team Silly").save()
         # Team(name="Hamburger").save()
 
+        Team(name='team1').save()
+        Team(name='team2').save()
+        Team(name='team3').save()
         self.assertTrue(Team.objects.all().count() > 0)
 
         response = self.client.get(reverse('team-list'))
