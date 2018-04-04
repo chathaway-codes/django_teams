@@ -42,18 +42,39 @@ class TeamListView(ListView):
         else:
             queryset = queryset.order_by('-id')
 
-        teams = {}
+        
+        team_names = []
+        team_list = []
         for q in queryset:
-            if q.name not in teams:
-                try:
-                    teams[q.name] = [q.id, q.pk, q.description, q.member_count, q.owner, q.role]
+            if q.name not in team_names:
+                team_names.append(q.name)
+                tmp = {'name': q.name, 'id': q.id, 'pk': q.pk, 'description': q.description, 'member_count':q.member_count, 
+                       'owner': q.owner}
+                try: 
+                    tmp['role'] = q.role
                 except Exception:
-                    teams[q.name] = [q.id, q.pk, q.description, q.member_count, q.owner, None]
-            else:
-                teams[q.name][3] += q.member_count
-                if q.owner is not None:
-                    teams[q.name][4] = q.owner
-        return super(TeamListView, self).render_to_response({'teams': teams}, **response_kwargs)
+                    tmp['role'] = None
+                team_list.append(tmp)
+            else: 
+                for t in team_list:
+                    if t['name'] == q.name:
+                        t['member_count'] += q.member_count
+                        if q.owner is not None:
+                            t['owner'] = q.owner
+        return super(TeamListView, self).render_to_response({'list': team_list}, **response_kwargs)
+
+        # teams = {}
+        # for q in queryset:
+        #     if q.name not in teams:
+        #         try:
+        #             teams[q.name] = [q.id, q.pk, q.description, q.member_count, q.owner, q.role]
+        #         except Exception:
+        #             teams[q.name] = [q.id, q.pk, q.description, q.member_count, q.owner, None]
+        #     else:
+        #         teams[q.name][3] += q.member_count
+        #         if q.owner is not None:
+        #             teams[q.name][4] = q.owner
+        # return super(TeamListView, self).render_to_response({'teams': teams}, **response_kwargs)
 
 
 class UserTeamListView(ListView):

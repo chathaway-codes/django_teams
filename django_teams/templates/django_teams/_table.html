@@ -1,26 +1,26 @@
 {% load teams %}
 <tr>
   <td>
-    <a href="{% url 'team-detail' pk=value.0 %}">{{ key }}</a>
+    <a href="{% url 'team-detail' pk=team.id %}">{{ team.name }}</a>
     {% if not user.is_anonymous %}
-        {% if value.3 == 20 %}
-            (<a href="{% url 'team-edit' pk=value.1 %}">Admin</a>)
+        {% if team.role == 20 %}
+            (<a href="{% url 'team-edit' pk=team.pk %}">Admin</a>)
         {% endif %}
     {% endif %}
   </td>
-  <td>{% if value.2 %}{{ value.2|truncatewords:15 }}{% endif %}</td>
-  <td>{{ value.4 }}</td>
-  <td>{{ value.3 }}</td>
+  <td>{% if team.description %}{{ team.description|truncatewords:15 }}{% endif %}</td>
+  <td>{{ team.owner }}</td>
+  <td>{{ team.member_count }}</td>
   <td>
   {% if not user.is_anonymous %}
-              {% if value.5 == 0 %}
-                  <a href="{% url 'teamstatus-create' team_pk=value.1 %}">Join</a>
-              {% elif value.5 == 1 %}
+              {% if team.role == 0 %}
+                  <a href="{% url 'teamstatus-create' team_pk=team.pk %}">Join</a>
+              {% elif team.role == 1 %}
                   Pending approval
-              {% elif value.5 == 10 %}
+              {% elif team.role == 10 %}
                   Member
-              {% elif value.5 == 20 %}
-                  Teacher (<a href="{% url 'team-edit' pk=value.1 %}">Admin</a>)
+              {% elif team.role == 20 %}
+                  Teacher (<a href="{% url 'team-edit' pk=team.pk %}">Admin</a>)
               {% endif %}
       {% else %}
           You're not logged in!
