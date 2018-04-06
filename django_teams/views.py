@@ -13,14 +13,15 @@ from django_teams.forms import (TeamEditForm,
                                 action_formset)
 from django.db.models import Case, When
 from django.db import models
+from django.contrib.contenttypes.models import ContentType
 
 
 def loadGenericKeyRelations(queryset):
     distinct_contents = queryset.values_list('content_type', flat=True).distinct()
     object_items = []
     for object in distinct_contents:
-        content_type = object.model_class()
-        set = queryset.filter(content_type=object.content_type).values()
+        content_type = ContentType.objects.get(id=object).model_class()
+        set = queryset.filter(content_type=object).values()
         objects = content_type.objects.filter(pk__in=[object['object_id'] for object in set])
         for relation in content_type._meta.get_fields():
             if relation.get_internal_type() is 'ForeignKey':
