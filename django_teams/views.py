@@ -230,14 +230,15 @@ class TeamEditView(UpdateView):
             for status in statuses:
                 status.delete()
 
-        
         for num in range(3, len(form)):
             current_action = form[num].cleaned_data['action']
             current_items = form[num].cleaned_data['items']
             objects = []
             if current_items:
                 content_type = ContentType.objects.get_for_model(current_items[0])
-                objects = Ownership.objects.filter(content_type=content_type, team=self.object, object_id__in=[object.id for object in current_items])
+                objects = Ownership.objects.filter(content_type=content_type,
+                                                   team=self.object,
+                                                   object_id__in=[object.id for object in current_items])
             if current_action == 'Approve':
                 for object in objects:
                     object.approved = True
