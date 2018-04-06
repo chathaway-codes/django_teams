@@ -197,48 +197,54 @@ class TeamEditView(UpdateView):
         # Owners
         owner_action = form[0].cleaned_data['action']
         owner_items = form[0].cleaned_data['items']
+        statuses = TeamStatus.objects.filter(team=self.object, user__in=[object for object in owner_items])
         if owner_action == 'Demote':
-            for i in owner_items:
-                o = self.object.get_user_status(i)
-                o.role = 10
-                o.save()
+            for status in statuses:
+                status.role = 10
+                status.save()
         if owner_action == 'Remove':
-            for i in owner_items:
-                self.object.get_user_status(i).delete()
+            for status in statuses:
+                status.delete()
 
         # Members
         member_action = form[1].cleaned_data['action']
         member_items = form[1].cleaned_data['items']
+        statuses = TeamStatus.objects.filter(team=self.object, user__in=[object for object in member_items])
         if member_action == 'Promote':
-            for i in member_items:
-                o = self.object.get_user_status(i)
-                o.role = 20
-                o.save()
+            for status in statuses:
+                status.role = 20
+                status.save()
         if member_action == 'Remove':
-            for i in member_items:
-                self.object.get_user_status(i).delete()
+            for status in statuses:
+                status.delete()
 
         # Member Requests
         request_action = form[2].cleaned_data['action']
         request_items = form[2].cleaned_data['items']
+        statuses = TeamStatus.objects.filter(team=self.object, user__in=[object for object in request_items])
         if request_action == 'Approve':
-            for i in request_items:
-                i.role = 10
-                i.save()
+            for status in statuses:
+                status.role = 10
+                status.save()
         if request_action == 'Revoke':
-            for i in request_items:
-                i.delete()
+            for status in statuses:
+                status.delete()
 
+        
         for num in range(3, len(form)):
             current_action = form[num].cleaned_data['action']
             current_items = form[num].cleaned_data['items']
+            objects = []
+            if current_items:
+                content_type = ContentType.objects.get_for_model(current_items[0])
+                objects = Ownership.objects.filter(content_type=content_type, team=self.object, object_id__in=[object.id for object in current_items])
             if current_action == 'Approve':
-                for i in current_items:
-                    i.approved = True
-                    i.save()
+                for object in objects:
+                    object.approved = True
+                    object.save()
             if current_action == 'Remove':
-                for i in current_items:
-                    i.delete()
+                for object in objects:
+                    object.delete()
 
         return HttpResponseRedirect(self.get_success_url())
 
