@@ -41,7 +41,7 @@
             <h3 class="panel-title">Approved Objects</h3>
         </div>
         <div class="panel-body row">
-          {% for type in approved_objects %}
+          {% for type in approved_objects_types %}
             {% for owned in type %}
               <div class="col-sm-6 col-md-2">
                   {% with object=owned %}
