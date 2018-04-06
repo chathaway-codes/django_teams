@@ -16,10 +16,13 @@ class ListTeamsTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_page_contains_all_teams(self):
-        Team(name="Team Awesome").save()
-        Team(name="Team Silly").save()
-        Team(name="Hamburger").save()
+        # Team(name="Team Awesome").save()
+        # Team(name="Team Silly").save()
+        # Team(name="Hamburger").save()
 
+        Team(name='team1').save()
+        Team(name='team2').save()
+        Team(name='team3').save()
         self.assertTrue(Team.objects.all().count() > 0)
 
         response = self.client.get(reverse('team-list'))
@@ -56,8 +59,8 @@ class DetailTeamsTests(TestCase):
     def test_contains_list_of_owners(self):
         team = Team.objects.get(pk=1)
         response = self.client.get(reverse('team-detail', kwargs={'pk': team.pk}))
-
-        for leader in team.owners():
+        owners = team.users.filter(teamstatus__role=20)
+        for leader in owners:
             self.assertContains(response, str(leader))
 
     def test_private_team_is_not_open_to_public(self):

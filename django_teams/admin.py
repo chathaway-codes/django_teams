@@ -1,45 +1,50 @@
 # This is where you can add stuff to the admin view
 from django.contrib import admin
-
 from django_teams.models import Team, TeamStatus, Ownership
+from django.contrib.auth.models import Group, User
 
 
+admin.site.unregister(Group)
+admin.site.unregister(User)
+
+
+@admin.register(Group)
+class GroupAdmin(admin.ModelAdmin):
+
+    show_full_result_count = False
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+
+    show_full_result_count = False
+
+
+@admin.register(Team)
 class TeamAdmin(admin.ModelAdmin):
-    """Innumerate application updating from admin."""
 
-    list_display = ['name', 'description', 'owner', 'member']
-    search_fields = ['name', 'users__username']
+    show_full_result_count = False
 
-    def owner(self, obj):
-        return "\n".join([a.username for a in obj.owners().all()])
-
-    def member(self, obj):
-        return "\n".join([a.username for a in obj.members().all()])
+    def get_queryset(self, request):
+        qs = super(TeamAdmin, self).get_queryset(request)
+        return qs.select_related()
 
 
-class TeamStatusAdmin(admin.ModelAdmin):
-    """Innumerate application updating from admin."""
-
-    list_display = ['user', 'team', 'comment', 'role']
-    search_fields = ['user__username', 'team__name']
-    list_filter = ['role']
-
-
+@admin.register(Ownership)
 class OwnershipAdmin(admin.ModelAdmin):
-    """Innumerate application updating from admin."""
 
-    list_display = ['content_object', 'owner', 'team', 'approved', 'content_type']
-    search_fields = ['team__name']
-    list_filter = ['approved']
+    show_full_result_count = False
 
-    def owner(self, obj):
-        if hasattr(obj.content_object, 'owner'):
-            return obj.content_object.owner
-        return 'n/a'
+    def get_queryset(self, request):
+        qs = super(OwnershipAdmin, self).get_queryset(request)
+        return qs.select_related()
 
 
-# ie,
-# admin.site.register(User, UserAdmin)
-admin.site.register(Team, TeamAdmin)
-admin.site.register(TeamStatus, TeamStatusAdmin)
-admin.site.register(Ownership, OwnershipAdmin)
+@admin.register(TeamStatus)
+class TeamStatusAdmin(admin.ModelAdmin):
+
+    show_full_result_count = False
+
+    def get_queryset(self, request):
+        qs = super(TeamStatusAdmin, self).get_queryset(request)
+        return qs.select_related('user', 'team').filter(user=request.user)

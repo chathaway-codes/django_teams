@@ -23,8 +23,8 @@ def read_requirements(fname):
 
 setup(
     zip_safe=False,
-    name="django_teams",
-    version="1.1.1",
+    name="django_teams_community",
+    version="1.3.1",
     author="Charles H",
     author_email="chathaway@logrit.com",
     description="This package provides a framework for organizing groups of" +

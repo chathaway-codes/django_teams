@@ -39,11 +39,12 @@ class TeamStatusCreateForm(ModelForm):
         fields = ['comment']
 
 
-def action_formset(qset, actions, link=False):
+def action_formset(prefix_name, qset, actions, link=False):
     """A form factory which returns a form which allows the user to pick a specific action to
     perform on a chosen subset of items from a queryset.
     """
     class _ActionForm(forms.Form):
+        name = prefix_name
         queryset = qset
         items = forms.ModelMultipleChoiceField(queryset=qset, required=False)
         action = forms.ChoiceField(choices=zip(actions, actions), required=False)
