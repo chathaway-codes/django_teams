@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django_teams.models import Team
+from django_teams.models import Team, TeamStatus, Ownership
 
 
 class ListTeamsTests(TestCase):
@@ -145,4 +145,41 @@ class EditTeamsTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
 
+        self.client.logout()
+
+class AdminTests(TestCase):
+    fixtures = ['test_data.json']
+
+    def test_team(self):
+        Team(name='team1').save()
+        Team(name='team2').save()
+        Team(name='team3').save()
+        self.assertTrue(Team.objects.all().count() > 0)
+        self.client.login(username='test', password='test')
+        response = self.client.get('/admin/django_teams/team/')
+        for team in Team.objects.all():
+            self.assertContains(response, str(team))
+        self.client.logout()
+
+    def test_ownership(self):
+        Ownership(object_id=5, content_type_id=5, team_id=5).save()
+        Ownership(object_id=6, content_type_id=6, team_id=6).save()
+        Ownership(object_id=7, content_type_id=7, team_id=7).save()
+        self.assertTrue(Ownership.objects.all().count() > 0)
+        self.client.login(username='test', password='test')
+        response = self.client.get('/admin/django_teams/ownership/')
+        for ownership in Ownership.objects.all():
+            self.assertContains(response, str(ownership))
+        self.client.logout()
+
+    def test_teamstatus(self):
+        TeamStatus(team_id=5, user_id=1, role=10).save()
+        TeamStatus(team_id=6, user_id=1, role=20).save()
+        TeamStatus(team_id=7, user_id=1, role=10).save()
+        self.assertTrue(Ownership.objects.all().count() > 0)
+        self.client.login(username='test', password='test')
+        response = self.client.get('/admin/django_teams/teamstatus/')
+        for teamstatus in TeamStatus.objects.all():
+            if teamstatus.user_id == 1:
+                self.assertContains(response, str(teamstatus))
         self.client.logout()
