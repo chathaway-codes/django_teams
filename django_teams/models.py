@@ -15,7 +15,7 @@ CurrentUser = None
 CurrentTeam = None
 
 class Team(models.Model):
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, null=True, blank=True, through='django_teams.TeamStatus', related_name='team_member')
+    users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, through='django_teams.TeamStatus', related_name='team_member')
     name = models.CharField(max_length=255)
     private = models.BooleanField(default=False)
     description = models.TextField(null=True, blank=True)
@@ -98,8 +98,8 @@ class Team(models.Model):
 
 
 class TeamStatus(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    team = models.ForeignKey('django_teams.Team')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    team = models.ForeignKey('django_teams.Team', on_delete=models.CASCADE)
     comment = models.CharField(max_length=255, default='')
 
     TEAM_ROLES = (
@@ -118,14 +118,14 @@ class TeamStatus(models.Model):
         return "%s requesting to join %s" % (self.user.__unicode__(), self.team.__unicode__())
 
 class Ownership(models.Model):
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     
     approved = models.BooleanField(default=False)
 
 
-    team = models.ForeignKey('django_teams.Team')
+    team = models.ForeignKey('django_teams.Team', on_delete=models.CASCADE)
     
     @staticmethod
     def check_permission(item):

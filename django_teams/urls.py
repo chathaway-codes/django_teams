@@ -11,7 +11,7 @@ from django_teams.views import *
 
 urlpatterns = [
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
 
     # TemplateView + Login
     #url(r'^$', login_required(TemplateView.as_view(template_name="home.html")), {}, 'home'),
