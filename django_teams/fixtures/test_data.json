@@ -262,6 +262,42 @@
 },
 {
   "fields": {
+    "username": "test2",
+    "first_name": "",
+    "last_name": "",
+    "is_active": true,
+    "is_superuser": true,
+    "is_staff": true,
+    "last_login": "2014-12-22T12:03:54.301Z",
+    "groups": [],
+    "user_permissions": [],
+    "password": "pbkdf2_sha256$12000$e9OtDlgIrerW$9pW64IABGnyc91Ck51brx34QI6gpdFi2+ycEbU9W8O4=",
+    "email": "",
+    "date_joined": "2014-12-22T12:03:34.406Z"
+  },
+  "model": "auth.user",
+  "pk": 2
+},
+{
+  "fields": {
+    "username": "test3",
+    "first_name": "",
+    "last_name": "",
+    "is_active": true,
+    "is_superuser": true,
+    "is_staff": true,
+    "last_login": "2014-12-22T12:03:54.301Z",
+    "groups": [],
+    "user_permissions": [],
+    "password": "pbkdf2_sha256$12000$e9OtDlgIrerW$9pW64IABGnyc91Ck51brx34QI6gpdFi2+ycEbU9W8O4=",
+    "email": "",
+    "date_joined": "2014-12-22T12:03:34.406Z"
+  },
+  "model": "auth.user",
+  "pk": 3
+},
+{
+  "fields": {
     "expire_date": "2015-01-05T12:03:54.368Z",
     "session_data": "YzJlMjA4OTFmNjg5ODhiYmY1ZWEzZWExYTgwNDU5MWI0ODk2ZjA0ODp7Il9hdXRoX3VzZXJfaGFzaCI6ImY4NWU0ZWM1MDk1MDcwNzQ5MGExZDdkMDFmYmEyYWJlMjIxNjg4YTkiLCJfYXV0aF91c2VyX2JhY2tlbmQiOiJkamFuZ28uY29udHJpYi5hdXRoLmJhY2tlbmRzLk1vZGVsQmFja2VuZCIsIl9hdXRoX3VzZXJfaWQiOjF9"
   },
@@ -294,6 +330,38 @@
 },
 {
   "fields": {
+    "name": "Team Alpha",
+    "private": false
+  },
+  "model": "django_teams.team",
+  "pk": 4
+},
+{
+  "fields": {
+    "name": "Team Beta",
+    "private": false
+  },
+  "model": "django_teams.team",
+  "pk": 5
+},
+{
+  "fields": {
+    "name": "Team Apple",
+    "private": false
+  },
+  "model": "django_teams.team",
+  "pk": 6
+},
+{
+  "fields": {
+    "name": "Team Banana",
+    "private": false
+  },
+  "model": "django_teams.team",
+  "pk": 7
+},
+{
+  "fields": {
     "comment": "This is a comment",
     "role": 20,
     "user": 1,
@@ -311,6 +379,56 @@
   },
   "model": "django_teams.teamstatus",
   "pk": 2
+},
+{
+  "fields": {
+    "comment": "Something",
+    "role": 10,
+    "user": 2,
+    "team": 2
+  },
+  "model": "django_teams.teamstatus",
+  "pk": 3
+},
+{
+  "fields": {
+    "comment": "test1",
+    "role": 10,
+    "user": 1,
+    "team": 3
+  },
+  "model": "django_teams.teamstatus",
+  "pk": 4
+},
+{
+  "fields": {
+    "comment": "test2",
+    "role": 10,
+    "user": 1,
+    "team": 4
+  },
+  "model": "django_teams.teamstatus",
+  "pk": 5
+},
+{
+  "fields": {
+    "comment": "Something",
+    "role": 10,
+    "user": 3,
+    "team": 2
+  },
+  "model": "django_teams.teamstatus",
+  "pk": 6
+},
+{
+  "fields": {
+    "comment": "Something",
+    "role": 10,
+    "user": 3,
+    "team": 1
+  },
+  "model": "django_teams.teamstatus",
+  "pk": 7
 },
 {
   "fields": {

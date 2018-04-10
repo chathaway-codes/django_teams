@@ -21,13 +21,11 @@
 {{ block.super }}
     <script>
         var toggleSelected = function(selectId, objectId) {
-            console.log("Changing object " + selectId);
             var selectObject = $('#'+selectId+'_'+objectId);
             selectObject.toggleClass('active');
             var values = $("#"+selectId).val();
             if(values == null || values == "")
                 values = [];
-            console.log(values);
             if(values.indexOf(objectId) > -1) {
                 values.splice(values.indexOf(objectId), 1);
             } else {
@@ -35,7 +33,6 @@
             }
 
             $("#"+selectId).val(values);
-            console.log(values);
         };
     </script>
 {% endblock %}
@@ -44,25 +41,25 @@
 
     <form class="form-horizontal" method="post" action="{% url 'team-edit' pk=object.pk %}">
 
-    {% for f in form %}
+    {% for group in form %}
     <div class="panel panel-default">
         <div class="panel-heading">
-            <h3 class="panel-title">{{ f.prefix|capfirst }}</h3>
+            <h3 class="panel-title">{{ group.prefix|capfirst }}</h3>
         </div>
         <div class="panel-body">
             <div class="form-group">
                 <label class="col-sm-1 control-label">Action</label>
                 <div class="col-sm-11">
-                    {{ f.action }}
+                    {{ group.action }}
                 </div>
             </div>
             <div class="user-list row">
-                {% for object in f.queryset %}
+                {% for object in group.queryset %}
                     <div class="col-sm-6 col-md-2">
-                    <a class="thumbnail" onclick="toggleSelected('{{ f.items.id_for_label }}', '{{ object.id }}')" id="{{ f.items.id_for_label }}_{{ object.id }}">{% include object|load_fragment_template %}</a>
+                    <a class="thumbnail" onclick="toggleSelected('{{ group.items.id_for_label }}', '{{ object.id }}')" id="{{ group.items.id_for_label }}_{{ object.id }}">{% include object|load_fragment_template %}</a>
                     </div>
                 {% endfor %}
-                {{ f.items }}
+                {{ group.items }}
             </div>
             <!-- This get updated with JS when an object is clicked-->
             <button type="submit" class="btn btn-primary">Submit all changes</button>

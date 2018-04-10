@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+npm install -g less@1.7.0
+npm install -g promise

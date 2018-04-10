@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+indent() {
+    RE="s/^/       /"
+    [ $(uname) == "Darwin" ] && sed -l "$RE" || sed -u "$RE"
+}
+
+MANAGE_FILE=$(find . -maxdepth 3 -type f -name 'manage.py' | head -1)
+MANAGE_FILE=${MANAGE_FILE:2}
+
+echo "-----> Configuring database..."
+echo "import dj_database_url" > local_settings.py
+echo "DATABASES = {}; DATABASES['default'] =  dj_database_url.config()" >> local_settings.py
+echo "SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')" >> local_settings.py
+echo "ALLOWED_HOSTS = ['*']" >> local_settings.py
+
+
+# This step will have to be done manually via:
+#  heroku pg:reset HEROKU_POSTGRESQL_AMBER_URL --confirm csdt-community-site
+#echo "-----> Clearing database"
+#python $MANAGE_FILE sqlflush --verbosity=0 | python $MANAGE_FILE dbshell
+echo "-----> Migrating database"
+python $MANAGE_FILE migrate --noinput | indent
+echo "-----> Loading intial data"
+python $MANAGE_FILE loaddata project_share/fixtures/default.json | indent
+
+echo "-----> Configuring static files..."
+echo "from dj_static import Cling" >> rpi_csdt_community/wsgi.py
+echo "application = Cling(application)" >> rpi_csdt_community/wsgi.py
+
+echo

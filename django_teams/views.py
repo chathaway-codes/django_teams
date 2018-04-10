@@ -5,20 +5,72 @@ from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import CreateView, UpdateView
 from django.core.urlresolvers import reverse
-#from django.contrib import messages
 from django.shortcuts import get_object_or_404
+from django.db.models import Count, F
+from django_teams.models import Team, TeamStatus, Ownership
+from django_teams.forms import (TeamEditForm,
+                                TeamStatusCreateForm,
+                                action_formset)
+from django.db.models import Case, When
+from django.db import models
+from django.contrib.contenttypes.models import ContentType
 
-from django_teams.models import Team, Ownership, TeamStatus
-from django_teams.forms import *
+
+def loadGenericKeyRelations(queryset):
+    distinct_contents = queryset.values_list('content_type', flat=True).distinct()
+    object_items = []
+    for object in distinct_contents:
+        content_type = ContentType.objects.get(id=object).model_class()
+        set = queryset.filter(content_type=object).values()
+        objects = content_type.objects.filter(pk__in=[object['object_id'] for object in set])
+        for relation in content_type._meta.get_fields():
+            if relation.get_internal_type() is 'ForeignKey':
+                objects.select_related(relation.name)
+        object_items.append(objects.all())
+    return object_items
+
 
 class TeamListView(ListView):
     model = Team
 
+    def render_to_response(self, context, **response_kwargs):
+        queryset = Team.objects.all().annotate(member_count=Count('users'))
+        queryset = queryset.annotate(owner=Case(When(teamstatus__role=20, then=F('users__username')), default=None))
+        if not self.request.user.is_anonymous():
+            queryset = queryset.annotate(role=Case(When(teamstatus__user=self.request.user,
+                                         then=F('teamstatus__role')), default=0, outputfield=models.IntegerField()))
+            queryset = queryset.order_by('-role')
+        else:
+            queryset = queryset.order_by('-id')
+        team_names = []
+        team_list = []
+        # combine teams with the same name
+        for q in queryset:
+            if q.name not in team_names:
+                team_names.append(q.name)
+                tmp = {'name': q.name, 'id': q.id, 'pk': q.pk, 'description': q.description,
+                       'member_count': q.member_count, 'owner': q.owner}
+                try:
+                    tmp['role'] = q.role
+                except Exception:
+                    tmp['role'] = None
+                team_list.append(tmp)
+            else:
+                t = team_list[team_names.index(q.name)]
+                t['member_count'] += q.member_count
+                if q.owner is not None:
+                    t['owner'] = q.owner
+        return super(TeamListView, self).render_to_response({'list': team_list}, **response_kwargs)
+
+
 class UserTeamListView(ListView):
     template_name = 'django_teams/user_team_list.html'
+
     def get_queryset(self):
-        statuses = TeamStatus.objects.filter(user=self.request.user, role=20)
-        return [status.team for status in statuses]
+        statuses = TeamStatus.objects.select_related('user').filter(user=self.request.user,
+                                                                    role=20).values_list('team', flat=True)
+        return statuses
+
 
 class TeamCreateView(CreateView):
     model = Team
@@ -34,6 +86,7 @@ class TeamCreateView(CreateView):
         self.object.add_user(self.request.user, team_role=20)
         return ret
 
+
 class TeamDetailView(DetailView):
     model = Team
 
@@ -43,20 +96,38 @@ class TeamDetailView(DetailView):
 
     def get_object(self, queryset=None):
         object = super(TeamDetailView, self).get_object(queryset)
-
         if object.private and self.request.user not in object.users.filter(teamstatus__role__gte=10):
             raise PermissionDenied()
         return object
+
+    def render_to_response(self, context, **response_kwargs):
+        team = self.object
+        # context['owner'] = team.users.filter(teamstatus__role=20)
+        # context['members'] = team.users.filter(teamstatus__role=10)
+        context['owners'] = []
+        context['members'] = []
+        statuses = TeamStatus.objects.select_related('user', 'team').filter(team=team)
+        for s in statuses:
+            if s.role == 10:
+                context['members'].append(s.user)
+            elif s.role == 20:
+                context['owners'].append(s.user)
+        owned = Ownership.objects.filter(team=team, approved=True)
+        context['approved_objects_types'] = loadGenericKeyRelations(owned)
+        return super(TeamDetailView, self).render_to_response(context, **response_kwargs)
+
 
 class TeamInfoEditView(UpdateView):
     model = Team
     fields = ['name', 'description', 'private']
     template_name = 'django_teams/teaminfo_form.html'
+
     def get_object(self, queryset=None):
         object = super(TeamInfoEditView, self).get_object(queryset)
         if self.request.user not in object.users.filter(teamstatus__role__gte=20):
             raise PermissionDenied()
         return object
+
 
 class TeamEditView(UpdateView):
     model = Team
@@ -77,21 +148,35 @@ class TeamEditView(UpdateView):
     def get_form_class(self):
         # get forms for team leaders, team members, team requests
         ret = []
-        ret += [action_formset(self.object.owners(), ('---', 'Demote', 'Remove'))]
-        ret += [action_formset(self.object.members(), ('---', 'Promote', 'Remove'))]
-        ret += [action_formset(self.object.requests(), ('---', 'Approve', 'Reject'))]
-        ret += [action_formset(self.object.approved_objects(), ('---', 'Remove'), link=True)]
-        ret += [action_formset(self.object.unapproved_objects(), ('---', 'Approve', 'Reject'), link=True)]
+        users = self.object.users
+        ret += [action_formset(prefix_name='teachers', qset=users.filter(teamstatus__role=20),
+                               actions=('---', 'Demote', 'Remove'))]
+        ret += [action_formset(prefix_name='students', qset=users.filter(teamstatus__role=10),
+                               actions=('---', 'Promote', 'Remove'))]
+        ret += [action_formset(prefix_name='member-requests', qset=users.filter(teamstatus__role=1),
+                               actions=('---', 'Approve', 'Reject'))]
+        owned_objects = Ownership.objects.filter(team=self.object)
+        approved = loadGenericKeyRelations(owned_objects.filter(approved=True))
+        for set in approved:
+            if set:
+                prefix_name = 'approved-' + str(set.model.__name__)
+                ret += [action_formset(prefix_name=prefix_name, qset=set, actions=('---', 'Remove'), link=True)]
+        pending_approval = loadGenericKeyRelations(owned_objects.filter(approved=False))
+        for set in pending_approval:
+            if set:
+                prefix_name = str(set.model.__name__) + 's-pending-approval'
+                ret += [action_formset(prefix_name=prefix_name, qset=set,
+                                       actions=('---', 'Approve', 'Remove'), link=True)]
         return ret
 
     def get_form(self, form_class=TeamEditForm):
         kwargs = self.get_form_kwargs()
-        form_class = self.get_form_class();
-
+        form_class = self.get_form_class()
         if 'data' in kwargs:
-            ret = [form_class[0](kwargs['data'], prefix='teachers'), form_class[1](kwargs['data'], prefix='students'), form_class[2](kwargs['data'], prefix='member-requests'), form_class[3](kwargs['data'], prefix='approved-objects'), form_class[4](kwargs['data'], prefix='approval-requests')]
+            ret = [form_class[num](kwargs['data'],
+                                   prefix=form_class[num].name) for num in range(len(form_class))]
         else:
-            ret = [form_class[0](prefix='teachers'), form_class[1](prefix='students'), form_class[2](prefix='member-requests'), form_class[3](prefix='approved-objects'), form_class[4](prefix='approval-requests')]
+            ret = [form_class[num](prefix=form_class[num].name) for num in range(len(form_class))]
 
         return ret
 
@@ -112,63 +197,65 @@ class TeamEditView(UpdateView):
         # Owners
         owner_action = form[0].cleaned_data['action']
         owner_items = form[0].cleaned_data['items']
+        statuses = TeamStatus.objects.filter(team=self.object, user__in=[object for object in owner_items])
         if owner_action == 'Demote':
-            for i in owner_items:
-                o = self.object.get_user_status(i)
-                o.role = 10
-                o.save()
+            for status in statuses:
+                status.role = 10
+                status.save()
         if owner_action == 'Remove':
-            for i in owner_items:
-                self.object.get_user_status(i).delete()
+            for status in statuses:
+                status.delete()
 
         # Members
         member_action = form[1].cleaned_data['action']
         member_items = form[1].cleaned_data['items']
+        statuses = TeamStatus.objects.filter(team=self.object, user__in=[object for object in member_items])
         if member_action == 'Promote':
-            for i in member_items:
-                o = self.object.get_user_status(i)
-                o.role = 20
-                o.save()
+            for status in statuses:
+                status.role = 20
+                status.save()
         if member_action == 'Remove':
-            for i in member_items:
-                self.object.get_user_status(i).delete()
+            for status in statuses:
+                status.delete()
 
         # Member Requests
         request_action = form[2].cleaned_data['action']
         request_items = form[2].cleaned_data['items']
+        statuses = TeamStatus.objects.filter(team=self.object, user__in=[object for object in request_items])
         if request_action == 'Approve':
-            for i in request_items:
-                i.role = 10
-                i.save()
+            for status in statuses:
+                status.role = 10
+                status.save()
         if request_action == 'Revoke':
-            for i in request_items:
-                i.delete()
-                
-        current_action = form[3].cleaned_data['action']
-        current_items = form[3].cleaned_data['items']
-        if current_action == 'Remove':
-            for i in current_items:
-                i.delete()
-                
-        object_action = form[4].cleaned_data['action']
-        object_items = form[4].cleaned_data['items']
-        if object_action == 'Approve':
-            for i in object_items:
-                i.approved = True
-                i.save()
-        if object_action == 'Reject':
-            for i in object_items:
-                i.delete()
-               
+            for status in statuses:
+                status.delete()
+
+        for num in range(3, len(form)):
+            current_action = form[num].cleaned_data['action']
+            current_items = form[num].cleaned_data['items']
+            objects = []
+            if current_items:
+                content_type = ContentType.objects.get_for_model(current_items[0])
+                objects = Ownership.objects.filter(content_type=content_type,
+                                                   team=self.object,
+                                                   object_id__in=[object.id for object in current_items])
+            if current_action == 'Approve':
+                for object in objects:
+                    object.approved = True
+                    object.save()
+            if current_action == 'Remove':
+                for object in objects:
+                    object.delete()
 
         return HttpResponseRedirect(self.get_success_url())
 
     def get_success_url(self):
-      return reverse('team-edit', kwargs={'pk':self.object.pk})
+        return reverse('team-edit', kwargs={'pk': self.object.pk})
+
 
 class TeamStatusCreateView(CreateView):
     model = TeamStatus
-    form_class=TeamStatusCreateForm
+    form_class = TeamStatusCreateForm
 
     def get_success_url(self):
         return reverse('team-list')
@@ -177,7 +264,7 @@ class TeamStatusCreateView(CreateView):
         self.team = Team.objects.get(pk=kwargs['team_pk'])
         self.request = request
         return super(TeamStatusCreateView, self).dispatch(request, *args, **kwargs)
-    
+
     def form_valid(self, form):
         form.instance.team = self.team
         form.instance.user = self.request.user

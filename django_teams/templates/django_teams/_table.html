@@ -1,0 +1,29 @@
+{% load teams %}
+<tr>
+  <td>
+    <a href="{% url 'team-detail' pk=team.id %}">{{ team.name }}</a>
+    {% if not user.is_anonymous %}
+        {% if team.role == 20 %}
+            (<a href="{% url 'team-edit' pk=team.pk %}">Admin</a>)
+        {% endif %}
+    {% endif %}
+  </td>
+  <td>{% if team.description %}{{ team.description|truncatewords:15 }}{% endif %}</td>
+  <td>{{ team.owner }}</td>
+  <td>{{ team.member_count }}</td>
+  <td>
+  {% if not user.is_anonymous %}
+              {% if team.role == 0 %}
+                  <a href="{% url 'teamstatus-create' team_pk=team.pk %}">Join</a>
+              {% elif team.role == 1 %}
+                  Pending approval
+              {% elif team.role == 10 %}
+                  Member
+              {% elif team.role == 20 %}
+                  Teacher (<a href="{% url 'team-edit' pk=team.pk %}">Admin</a>)
+              {% endif %}
+      {% else %}
+          You're not logged in!
+      {% endif %}
+  </td>
+</tr>

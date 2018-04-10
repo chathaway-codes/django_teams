@@ -8,3 +8,8 @@ eclipse/
 *.sqlite3
 python/
 django_teams.egg-info/
+.vagrant/
+ubuntu-xenial-16.04-cloudimg-console.log
+django_teams.egg-info/
+django_teams_community.egg-info/
+dist/
