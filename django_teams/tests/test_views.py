@@ -147,6 +147,7 @@ class EditTeamsTests(TestCase):
 
         self.client.logout()
 
+
 class AdminTests(TestCase):
     fixtures = ['test_data.json']
 
@@ -186,3 +187,4 @@ class AdminTests(TestCase):
                 self.assertContains(response, str(teamstatus))
                 self.assertContains(response, '/admin/django_teams/teamstatus/%d/change' % teamstatus.pk)
         self.client.logout()
+        
