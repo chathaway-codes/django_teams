@@ -159,6 +159,7 @@ class AdminTests(TestCase):
         response = self.client.get('/admin/django_teams/team/')
         for team in Team.objects.all():
             self.assertContains(response, str(team))
+            self.assertContains(response, '/admin/django_teams/team/%d/change' % team.pk)
         self.client.logout()
 
     def test_ownership(self):
@@ -170,6 +171,7 @@ class AdminTests(TestCase):
         response = self.client.get('/admin/django_teams/ownership/')
         for ownership in Ownership.objects.all():
             self.assertContains(response, str(ownership))
+            self.assertContains(response, '/admin/django_teams/ownership/%d/change' % ownership.pk)
         self.client.logout()
 
     def test_teamstatus(self):
@@ -182,4 +184,5 @@ class AdminTests(TestCase):
         for teamstatus in TeamStatus.objects.all():
             if teamstatus.user_id == 1:
                 self.assertContains(response, str(teamstatus))
+                self.assertContains(response, '/admin/django_teams/teamstatus/%d/change' % teamstatus.pk)
         self.client.logout()
