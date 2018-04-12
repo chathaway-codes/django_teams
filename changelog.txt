@@ -1,0 +1,15 @@
+# django_teams changelog
+
+## 1.4.1
+
+04/12/2018
+
+### Changes
+Putting un register group and user in try, to protect repos that don't have those
+
+## 1.4.0
+
+04/11/2018
+
+### Changes
+Refactored everything to be much more efficient
