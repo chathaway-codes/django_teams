@@ -39,7 +39,7 @@ class TeamListView(ListView):
         if not self.request.user.is_anonymous():
             queryset = queryset.annotate(role=Case(When(teamstatus__user=self.request.user,
                                          then=F('teamstatus__role')), default=0, outputfield=models.IntegerField()))
-            queryset = queryset.order_by('-role')
+            queryset = queryset.order_by('-role', 'name')
         else:
             queryset = queryset.order_by('-id')
         team_names = []
